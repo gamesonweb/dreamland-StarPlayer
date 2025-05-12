@@ -1,5 +1,5 @@
-#StarPlayer
-Composé de : 
+# StarPlayer
+Equipe composé de : 
 VARELA TAVARES Catia
 BOSSELUT Jauris
 
