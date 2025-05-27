@@ -159,8 +159,8 @@ function createTank(scene) {
             tank.frontVector = new BABYLON.Vector3(0, 0, -1);
 
             // === Initialise les HP ===
-            tank.hpMax = 100;
-            tank.hp = 100;
+            tank.hpMax = 5600;
+            tank.hp = 5600;
 
             tank.move = function() {
                 if (this.isDead) return;
@@ -246,17 +246,6 @@ function createTank(scene) {
             gui.addControl(hpBarContainer);
 
 
-            // Crée un texte pour afficher les HP
-            const hpText = new BABYLON.GUI.TextBlock();
-            hpText.text = tank.hp + " / " + tank.hpMax;
-            hpText.color = "white";
-            hpText.fontSize = "14px";
-            hpText.top = "-25px"; // Position au-dessus de la barre de vie
-            hpText.textHorizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
-            hpText.textVerticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_CENTER;
-            hpBarContainer.addControl(hpText);
-
-
             const hpBarFill = new BABYLON.GUI.Rectangle();
             hpBarFill.width = 1; // 1 = 100%
             hpBarFill.height = "100%";
@@ -268,17 +257,19 @@ function createTank(scene) {
             hpBarContainer.linkWithMesh(tank);
             hpBarContainer.linkOffsetY = -65; // Décalage au-dessus du personnage
 
+            // Texte flottant des HP au-dessus du tank
+            const hpFloatingText = new BABYLON.GUI.TextBlock();
+            hpFloatingText.color = "white";
+            hpFloatingText.fontSize = 18;
+            gui.addControl(hpFloatingText);
+            hpFloatingText.linkWithMesh(tank);
+            hpFloatingText.linkOffsetY = -90;
+
             tank.updateHpBar = function () {
                 const ratio = Math.max(this.hp / this.hpMax, 0);
                 hpBarFill.width = ratio;
-                hpText.text = this.hp + " / " + this.hpMax;
-
-                // Change la couleur selon le ratio
-                if (ratio <= 0.3) {
-                    hpBarFill.background = "red";
-                } else {
-                    hpBarFill.background = "green";
-                }
+                hpFloatingText.text = this.hp;
+                hpBarFill.background = ratio <= 0.3 ? "red" : "green";
             };
 
             
@@ -290,6 +281,7 @@ function createTank(scene) {
                 this.setEnabled(false); // Masquer le tank
                 this.hp = 0;
                 this.updateHpBar();
+                hpFloatingText.isVisible = false; // Effacer le texte des HP
                 inputStates = {}; // désactive les mouvements
             
                 // Retirer la barre de vie
@@ -322,6 +314,7 @@ function createTank(scene) {
                 // Réinitialise la vie
                 this.hp = this.hpMax;
                 this.updateHpBar();
+                hpFloatingText.isVisible = true;
             
                 // Position de respawn
                 this.position = new BABYLON.Vector3(0, 0.6, 0); // Changer selon le besoin
@@ -368,8 +361,8 @@ function createHeroDude(scene) {
                 this.rotation.y = Math.atan2(this.frontVector.x, this.frontVector.z);
             };
 
-            clone.hpMax = 20;
-            clone.hp = 20;
+            clone.hpMax = 5600;
+            clone.hp = 5600;
 
             // Créer l'interface GUI
             const gui = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
@@ -396,12 +389,21 @@ function createHeroDude(scene) {
             hpBarContainer.linkWithMesh(clone);
             hpBarContainer.linkOffsetY = -60;
 
-            // Fonction de mise à jour de la barre
+            // Texte flottant des HP au-dessus du dude
+            const hpFloatingText = new BABYLON.GUI.TextBlock();
+            hpFloatingText.color = "white";
+            hpFloatingText.fontSize = 16;
+            gui.addControl(hpFloatingText);
+            hpFloatingText.linkWithMesh(clone);
+            hpFloatingText.linkOffsetY = -80;
+
             clone.updateHpBar = function () {
                 const ratio = Math.max(this.hp / this.hpMax, 0);
                 hpBarFill.width = ratio;
                 hpBarFill.background = ratio < 0.3 ? "red" : "green";
+                hpFloatingText.text = this.hp;
             };
+
             clone.updateHpBar();
 
             
@@ -409,6 +411,7 @@ function createHeroDude(scene) {
                 this.isDead = true;
                 this.setEnabled(false);
                 hpBarContainer.isVisible = false;
+                hpFloatingText.text = "";
             
                 setTimeout(() => {
                     this.respawn();
@@ -446,7 +449,7 @@ function createHeroDude(scene) {
             
                 const direction = target.position.subtract(this.position).normalize();
                 const speed = 0.5;
-                const maxDistance = 30;
+                const maxDistance = 25;
                 let traveled = 0;
             
                 const renderObserver = scene.onBeforeRenderObservable.add(() => {
@@ -465,7 +468,7 @@ function createHeroDude(scene) {
                     if (distToTank < 2 && !target.isDead) {
                         bullet.dispose();
                         scene.onBeforeRenderObservable.remove(renderObserver); // ✅ CORRECTEMENT SUPPRIMÉ
-                        target.hp -= 1;
+                        target.hp -= 600; // Dégâts infligés
                         target.updateHpBar();
                         if (target.hp <= 0) {
                             target.die();
