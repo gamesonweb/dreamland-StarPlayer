@@ -153,7 +153,13 @@ function createTank(scene) {
         BABYLON.SceneLoader.ImportMesh("", "models/", "colt_player_geo.glb", scene, (meshes) => {
             let tank = meshes[0];
             tank.name = "heroTank";
-            tank.position = new BABYLON.Vector3(0, 0.6, 0);
+
+            const possibleZ = [3, 0, -3];
+            const randomZ = possibleZ[Math.floor(Math.random() * possibleZ.length)];
+            
+            // Position de respawn
+            tank.position = new BABYLON.Vector3(randomZ, 0.6, 30);
+            
             tank.scaling = new BABYLON.Vector3(0.3, 0.3, 0.3);
             tank.speed = 0.2;
             tank.frontVector = new BABYLON.Vector3(0, 0, -1);
@@ -184,53 +190,85 @@ function createTank(scene) {
             tank.canFire = true;
             tank.fireAfter = 0.3;
 
-            tank.fire = function() {
-                if (this.isDead || !inputStates.space || !this.canFire) return;
-                this.canFire = false;
+            tank.ammo = 1; // Valeur entre 0 et 1 (barre pleine = 1)
+            tank.ammoCostPerFire = 1 / 3; // Coût d’un tir complet
+            tank.reloadRate = 0.1; // Rechargement automatique par seconde
 
-                setTimeout(() => this.canFire = true, 1000 * this.fireAfter);
-
-                let cannonball = BABYLON.MeshBuilder.CreateSphere("cannonball", { diameter: 0.5 }, scene);
-                cannonball.material = new BABYLON.StandardMaterial("Fire", scene);
-                cannonball.material.diffuseTexture = new BABYLON.Texture("images/Fire.jpg", scene);
-
-                cannonball.position = this.position.add(this.frontVector.scale(5));
-
-                let speed = 1;
-                let direction = this.frontVector.clone();
-                let maxDistance = 25;
-                let traveled = 0;
-
-                scene.onBeforeRenderObservable.add(() => {
-                    if (!cannonball) return;
-                
-                    let movement = direction.scale(speed);
-                    cannonball.position.addInPlace(movement);
-                    traveled += speed;
-                    
-                    // Collision avec les dudes
-                    for (let dude of scene.dudes) {
-                        if (dude.isDead) continue;
-                        const dist = BABYLON.Vector3.Distance(cannonball.position, dude.position);
-                        if (dist < 2) {
-                            dude.hp -= 5;
-                            dude.updateHpBar();
-                            if (dude.hp <= 0) {
-                                dude.die();
-                            }
-                            cannonball.dispose();
-                            cannonball = null;
-                            return;
-                        }
-                    }
-                
-                    if (traveled > maxDistance) {
-                        cannonball.dispose();
-                        cannonball = null;
-                    }
-                });
-                
+            tank.updateAmmoBar = function () {
+                // Calcule le nombre de tiers pleins (valeurs possibles : 0, 1, 2, 3)
+                const fullSegments = Math.floor(this.ammo / this.ammoCostPerFire + 0.001);
+            
+                for (let i = 0; i < 3; i++) {
+                    segments[i].background = i < fullSegments ? "#f57c00" : "gray";
+                }
             };
+            
+
+            scene.onBeforeRenderObservable.add(() => {
+                if (!tank.isDead && tank.ammo < 1) {
+                    tank.ammo = Math.min(1, tank.ammo + tank.reloadRate * scene.getEngine().getDeltaTime() / 1000);
+                    tank.updateAmmoBar();
+                }
+            });
+            
+            
+            tank.fire = function () {
+                if (this.isDead || !inputStates.space || !this.canFire) return;
+                if (this.ammo < this.ammoCostPerFire) return; // Pas assez de recharge
+            
+                this.ammo -= this.ammoCostPerFire;
+                this.updateAmmoBar();
+                this.canFire = false;
+            
+                // Recharge possible après le cooldown
+                setTimeout(() => this.canFire = true, 1000 * this.fireAfter);
+            
+                // Tire 6 projectiles avec un léger délai entre chaque
+                for (let i = 0; i < 6; i++) {
+                    setTimeout(() => {
+                        if (this.isDead) return;
+            
+                        let cannonball = BABYLON.MeshBuilder.CreateSphere("cannonball", { diameter: 0.5 }, scene);
+                        cannonball.material = new BABYLON.StandardMaterial("Fire", scene);
+                        cannonball.material.diffuseTexture = new BABYLON.Texture("images/Fire.jpg", scene);
+                        cannonball.position = this.position.add(this.frontVector.scale(5));
+            
+                        let speed = 1;
+                        let direction = this.frontVector.clone();
+                        let maxDistance = 25;
+                        let traveled = 0;
+            
+                        scene.onBeforeRenderObservable.add(() => {
+                            if (!cannonball) return;
+            
+                            let movement = direction.scale(speed);
+                            cannonball.position.addInPlace(movement);
+                            traveled += speed;
+            
+                            for (let dude of scene.dudes) {
+                                if (dude.isDead) continue;
+                                const dist = BABYLON.Vector3.Distance(cannonball.position, dude.position);
+                                if (dist < 2) {
+                                    dude.hp -= 720;
+                                    dude.updateHpBar();
+                                    if (dude.hp <= 0) {
+                                        dude.die();
+                                    }
+                                    cannonball.dispose();
+                                    cannonball = null;
+                                    return;
+                                }
+                            }
+            
+                            if (traveled > maxDistance) {
+                                cannonball.dispose();
+                                cannonball = null;
+                            }
+                        });
+                    }, i * 80); // 80 ms entre chaque projectile (ajuste si tu veux plus ou moins rapide)
+                }
+            };
+            
 
             // Crée une interface GUI attachée à la scène
             const gui = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
@@ -274,7 +312,32 @@ function createTank(scene) {
 
             
             tank.updateHpBar();
-            
+
+            // --- BARRE ORANGE DE RECHARGEMENT EN 3 BLOCS ---
+            const subBarContainer = new BABYLON.GUI.Rectangle();
+            subBarContainer.width = "60px";
+            subBarContainer.height = "8px";
+            subBarContainer.cornerRadius = 3;
+            subBarContainer.color = "white";
+            subBarContainer.thickness = 1;
+            subBarContainer.background = "transparent";
+            gui.addControl(subBarContainer);
+            subBarContainer.linkWithMesh(tank);
+            subBarContainer.linkOffsetY = -57;
+
+            const segments = [];
+            for (let i = 0; i < 3; i++) {
+                const segment = new BABYLON.GUI.Rectangle();
+                segment.width = "31%"; // un peu moins que 33.33% pour laisser un espace
+                segment.height = "100%";
+                segment.left = `${(i - 1) * 33.33}%`;
+                segment.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
+                segment.thickness = 0;
+                segment.background = "#f57c00"; // orange
+                subBarContainer.addControl(segment);
+                segments.push(segment);
+            }
+
 
             tank.die = function () {
                 this.isDead = true;
@@ -286,6 +349,7 @@ function createTank(scene) {
             
                 // Retirer la barre de vie
                 hpBarContainer.isVisible = false;
+                subBarContainer.isVisible = false;
             
                 // Créer un texte de mort avec décompte
                 const deathText = new BABYLON.GUI.TextBlock("deathText");
@@ -316,16 +380,23 @@ function createTank(scene) {
                 this.updateHpBar();
                 hpFloatingText.isVisible = true;
             
+                // Choisir aléatoirement la valeur Z
+                const possibleZ = [3, 0, -3];
+                const randomZ = possibleZ[Math.floor(Math.random() * possibleZ.length)];
+            
                 // Position de respawn
-                this.position = new BABYLON.Vector3(0, 0.6, 0); // Changer selon le besoin
+                this.position = new BABYLON.Vector3(randomZ, 0.6, 30);
                 this.setEnabled(true);
                 this.isDead = false;
             
+                // Réinitialise les munitions
+                this.ammo = 1;
+                this.updateAmmoBar();
+            
                 // Réaffiche la barre de vie
                 hpBarContainer.isVisible = true;
+                subBarContainer.isVisible = true;
             };
-            
-
 
             resolve(tank);
         });
@@ -343,11 +414,7 @@ function createHeroDude(scene) {
 
         for (let i = 0; i < 3; i++) {
             let clone = original.clone("enemyDude_" + i);
-            clone.position = new BABYLON.Vector3(
-                Math.random() * 40 - 20,
-                0.6,
-                Math.random() * 40 - 20
-            );
+            clone.position = new BABYLON.Vector3(i * 3,0.6,-30);
             clone.scaling = new BABYLON.Vector3(0.3, 0.3, 0.3);
             clone.speed = 0.03 + Math.random() * 0.05;
             clone.frontVector = new BABYLON.Vector3(0, 0, 1);
@@ -422,8 +489,13 @@ function createHeroDude(scene) {
                 this.hp = this.hpMax;
                 this.updateHpBar();
             
-                // Remettre à une position aléatoire
-                this.position = new BABYLON.Vector3(0,0.6,0);
+                // Choisir aléatoirement la valeur Z
+                const possibleZ = [3, 0, -3];
+                const randomZ = possibleZ[Math.floor(Math.random() * possibleZ.length)];
+            
+                // Position de respawn
+                this.position = new BABYLON.Vector3(randomZ, 0.6, -30);
+
                 this.setEnabled(true);
                 this.isDead = false;
                 hpBarContainer.isVisible = true;
@@ -468,7 +540,7 @@ function createHeroDude(scene) {
                     if (distToTank < 2 && !target.isDead) {
                         bullet.dispose();
                         scene.onBeforeRenderObservable.remove(renderObserver); // ✅ CORRECTEMENT SUPPRIMÉ
-                        target.hp -= 600; // Dégâts infligés
+                        target.hp -= 720; // Dégâts infligés
                         target.updateHpBar();
                         if (target.hp <= 0) {
                             target.die();
