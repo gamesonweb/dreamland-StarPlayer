@@ -1,17 +1,17 @@
-export let selectedCharacter = null;
-export let selectedMap = null;
+ let selectedCharacter = null;
+ let selectedMap = null;
 
-export function setSelectedCharacter(character) {
+ function setSelectedCharacter(character) {
     selectedCharacter = character;
 }
 
-export function setSelectedMap(map) {
+function setSelectedMap(map) {
     selectedMap = map;
 }
 
-export function getSelectedCharacter() {
+ function getSelectedCharacter() {
     return selectedCharacter;
 }
-export function getSelectedMap() {
+ function getSelectedMap() {
     return selectedMap;
 }

@@ -1,29 +1,13 @@
-import {
-    Engine,
-    Scene,
-    ArcRotateCamera,
-    Vector3,
-    HemisphericLight,
-    MeshBuilder,
-    Texture,
-    FreeCamera,
-    FollowCamera,
-    StandardMaterial,
-    Color3,
-    AssetsManager
-} from "@babylonjs/core";
-import {AdvancedDynamicTexture, Rectangle, TextBlock} from "@babylonjs/gui";
-
-export function createLoadingScreen(engine, canvas, onLoadingComplete) {
-    let scene = new Scene(engine);
+function createLoadingScreen(engine, canvas, onLoadingComplete) {
+    let scene = new BABYLON.Scene(engine);
 
     // Désactiver le loading screen par défaut
     engine.loadingScreen.displayLoadingUI = function () {};
     engine.loadingScreen.hideLoadingUI = function () {};
 
     // GUI personnalisé
-    const gui = AdvancedDynamicTexture.CreateFullscreenUI("UI");
-    const loadingBarContainer = new Rectangle();
+    const gui = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
+    const loadingBarContainer = new BABYLON.GUI.Rectangle();
     loadingBarContainer.width = "50%";
     loadingBarContainer.height = "40px";
     loadingBarContainer.cornerRadius = 10;
@@ -32,7 +16,7 @@ export function createLoadingScreen(engine, canvas, onLoadingComplete) {
     loadingBarContainer.background = "green";
     gui.addControl(loadingBarContainer);
 
-    const loadingBar = new Rectangle();
+    const loadingBar = new BABYLON.GUI.Rectangle();
     loadingBar.width = "0%";
     loadingBar.height = "100%";
     loadingBar.cornerRadius = 10;
@@ -40,7 +24,7 @@ export function createLoadingScreen(engine, canvas, onLoadingComplete) {
     loadingBar.background = "green";
     loadingBarContainer.addControl(loadingBar);
 
-    const textBlock = new TextBlock();
+    const textBlock = new BABYLON.GUI.TextBlock();
     textBlock.text = "Chargement... 0%";
     textBlock.color = "blue";
     textBlock.fontSize = 18;
@@ -48,7 +32,7 @@ export function createLoadingScreen(engine, canvas, onLoadingComplete) {
     gui.addControl(textBlock);
 
     // Manager d'assets
-    const assetsManager = new AssetsManager(scene);
+    const assetsManager = new BABYLON.AssetsManager(scene);
     const personModelTask = assetsManager.addMeshTask("person", "", "models/personnages/", "perso1.glb");
 
     assetsManager.onProgress = (remainingCount, totalCount) => {
@@ -62,10 +46,14 @@ export function createLoadingScreen(engine, canvas, onLoadingComplete) {
         onLoadingComplete(scene);
     };
 
+    assetsManager.onTaskError = function(task) {
+        alert("Erreur de chargement : " + task.name);
+    };
+
     assetsManager.load();
 
-    // Affichage du chargement
+    /*// Affichage du chargement
     engine.runRenderLoop(() => {
         if (scene.activeCamera) scene.render();
-    });
+    });*/
 }

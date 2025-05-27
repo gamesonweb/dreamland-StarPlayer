@@ -1,8 +1,3 @@
-import "@babylonjs/core/Debug/debugLayer";
-import "@babylonjs/inspector";
-import { Engine } from "@babylonjs/core";
-import {createLoadingScreen} from "./loadingScreen.js";
-import {createHomeGameScene} from "./homeGame.js";
 class App {
     constructor() {
         this.canvas = document.createElement("canvas");
@@ -10,7 +5,7 @@ class App {
         this.canvas.style.height = "100%";
         this.canvas.id = "gameCanvas";
         document.body.appendChild(this.canvas);
-        this.engine = new Engine(this.canvas, true);
+        this.engine = new BABYLON.Engine(this.canvas, true);
         this.scene = null;
 
         createLoadingScreen(this.engine, this.canvas, () => {

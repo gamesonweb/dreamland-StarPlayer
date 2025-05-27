@@ -1,29 +1,24 @@
-import { Scene, ArcRotateCamera, Vector3, HemisphericLight, SceneLoader } from "@babylonjs/core";
-import { AdvancedDynamicTexture, Button, Control, StackPanel, Rectangle, Image, TextBlock } from "@babylonjs/gui";
-import { createHomeGameScene } from "./homeGame.js";
-import {setSelectedMap} from "./gameState.js";
-import {createGrassScene} from "./modes/zone/grass.js";
+function createMapsScene(engine, canvas, setScene) {
+    const scene = new BABYLON.Scene(engine);
 
-export function createMapsScene(engine, canvas, setScene) {
-    const scene = new Scene(engine);
-
-    const camera = new ArcRotateCamera("camera", Math.PI / 2, Math.PI / 2.5, 10, Vector3.Zero(), scene);
+    const camera = new BABYLON.ArcRotateCamera("camera", Math.PI / 2, Math.PI / 2.5, 10, BABYLON.Vector3.Zero(), scene);
     camera.attachControl(canvas, true);
     camera.inputs.clear();
 
-    new HemisphericLight("light", new Vector3(0, 1, 0), scene);
+    new BABYLON.HemisphericLight("light", new BABYLON.Vector3(0, 1, 0), scene);
 
-    const gui = AdvancedDynamicTexture.CreateFullscreenUI("UI");
+    // GUI
+    const gui = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
 
     // Bouton retour
-    const backButton = Button.CreateSimpleButton("backButton", "←");
+    const backButton = BABYLON.GUI.Button.CreateSimpleButton("backButton", "←");
     backButton.width = "50px";
     backButton.height = "50px";
     backButton.color = "black";
     backButton.background = "white";
     backButton.fontSize = 30;
-    backButton.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_LEFT;
-    backButton.verticalAlignment = Control.VERTICAL_ALIGNMENT_TOP;
+    backButton.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_LEFT;
+    backButton.verticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_TOP;
     backButton.paddingTop = "10px";
     backButton.paddingLeft = "10px";
     backButton.onPointerUpObservable.add(() => {
@@ -31,26 +26,20 @@ export function createMapsScene(engine, canvas, setScene) {
     });
     gui.addControl(backButton);
 
-    const maps = [
-        { name: "Plaine", thumbnail: "/thumbnails/grass.jpg",sceneBuilder: createGrassScene },
-        { name: "Désert", thumbnail: "/thumbnails/desert.jpg" },
-        { name: "Neige", thumbnail: "/thumbnails/snow.jpg" },
-        { name: "Lave", thumbnail: "/thumbnails/lava.jpg" },
-        { name: "Ville", thumbnail: "/thumbnails/city.jpg" }
-    ];
+    const maps = getMaps();
 
     let currentIndex = 0;
 
-    const mainPanel = new StackPanel();
+    const mainPanel = new BABYLON.GUI.StackPanel();
     mainPanel.width = "100%";
     mainPanel.height = "60%";
-    mainPanel.verticalAlignment = Control.VERTICAL_ALIGNMENT_CENTER;
-    mainPanel.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_CENTER;
+    mainPanel.verticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_CENTER;
+    mainPanel.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
     mainPanel.isVertical = true;
     mainPanel.spacing = 20;
     gui.addControl(mainPanel);
 
-    const carouselPanel = new StackPanel();
+    const carouselPanel = new BABYLON.GUI.StackPanel();
     carouselPanel.isVertical = false;
     carouselPanel.height = "150px";
     carouselPanel.spacing = 20;
@@ -61,7 +50,7 @@ export function createMapsScene(engine, canvas, setScene) {
         for (let i = currentIndex; i < Math.min(currentIndex + 3, maps.length); i++) {
             const map = maps[i];
 
-            const rect = new Rectangle();
+            const rect = new BABYLON.GUI.Rectangle();
             rect.width = "400px";
             rect.height = "150px";
             rect.thickness = 2;
@@ -69,17 +58,17 @@ export function createMapsScene(engine, canvas, setScene) {
             rect.background = "black";
             rect.cornerRadius = 10;
 
-            const img = new Image("img_" + map.name, map.thumbnail);
+            const img = new BABYLON.GUI.Image("img_" + map.name, map.thumbnail);
             img.width = "400px";
             img.height = "150px";
             img.paddingTop = "5px";
 
-            const label = new TextBlock();
+            const label = new BABYLON.GUI.TextBlock();
             label.text = map.name;
             label.height = "40px";
             label.color = "white";
             label.fontSize = 18;
-            label.textHorizontalAlignment = Control.HORIZONTAL_ALIGNMENT_CENTER;
+            label.textHorizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
 
             rect.addControl(img);
             rect.addControl(label);
@@ -89,7 +78,6 @@ export function createMapsScene(engine, canvas, setScene) {
                 setSelectedMap(map);
                 scene.dispose();
                 setScene(createHomeGameScene(engine, canvas, setScene));
-
             });
 
             carouselPanel.addControl(rect);
@@ -98,15 +86,15 @@ export function createMapsScene(engine, canvas, setScene) {
 
     updateCarousel();
 
-    const arrowPanel = new StackPanel();
+    const arrowPanel = new BABYLON.GUI.StackPanel();
     arrowPanel.isVertical = false;
     arrowPanel.spacing = 700;
     arrowPanel.height = "80px";
-    arrowPanel.verticalAlignment = Control.VERTICAL_ALIGNMENT_CENTER;
-    arrowPanel.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_CENTER;
+    arrowPanel.verticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_CENTER;
+    arrowPanel.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
     gui.addControl(arrowPanel);
 
-    const leftArrow = Button.CreateSimpleButton("left", "←");
+    const leftArrow = BABYLON.GUI.Button.CreateSimpleButton("left", "←");
     leftArrow.width = "60px";
     leftArrow.height = "60px";
     leftArrow.color = "white";
@@ -119,7 +107,7 @@ export function createMapsScene(engine, canvas, setScene) {
         }
     });
 
-    const rightArrow = Button.CreateSimpleButton("right", "→");
+    const rightArrow = BABYLON.GUI.Button.CreateSimpleButton("right", "→");
     rightArrow.width = "60px";
     rightArrow.height = "60px";
     rightArrow.color = "white";
@@ -136,4 +124,27 @@ export function createMapsScene(engine, canvas, setScene) {
     arrowPanel.addControl(rightArrow);
 
     return scene;
+}
+
+
+function getMaps() {
+    return [
+            {
+                name: "Plaine",
+                thumbnail: "/thumbnails/grass.jpg",
+                sceneBuilder: createGrassScene },
+            {
+                name: "Désert",
+                thumbnail: "/thumbnails/desert.jpg" },
+            {
+                name: "Neige",
+                thumbnail: "/thumbnails/snow.jpg" },
+            {
+                name: "Lave",
+                thumbnail: "/thumbnails/lava.jpg" },
+            {
+                name: "Ville",
+                thumbnail: "/thumbnails/city.jpg" },
+
+    ];
 }
