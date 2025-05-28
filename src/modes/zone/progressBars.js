@@ -1,50 +1,48 @@
-import { AdvancedDynamicTexture, Rectangle, Control, TextBlock } from "@babylonjs/gui";
-
-export function createProgressBars(scene) {
-    const ui = AdvancedDynamicTexture.CreateFullscreenUI("UI");
+function createProgressBars(scene) {
+    const ui = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
 
     // Barre rouge
-    const redBar = new Rectangle();
+    const redBar = new BABYLON.GUI.Rectangle();
     redBar.width = "40%";
     redBar.height = "4%";
     redBar.color = "white";
     redBar.background = "red";
     redBar.cornerRadius = 10;
-    redBar.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_LEFT;
+    redBar.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_LEFT;
     redBar.left = "5%";
     redBar.top = "5%";
-    redBar.verticalAlignment = Control.VERTICAL_ALIGNMENT_TOP;
+    redBar.verticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_TOP;
     ui.addControl(redBar);
 
     // Texte dans barre rouge
-    const redText = new TextBlock();
+    const redText = new BABYLON.GUI.TextBlock();
     redText.color = "white";
     redText.fontSize = 24;
     redText.text = "0%";
-    redText.textHorizontalAlignment = Control.HORIZONTAL_ALIGNMENT_CENTER;
-    redText.textVerticalAlignment = Control.VERTICAL_ALIGNMENT_CENTER;
+    redText.textHorizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
+    redText.textVerticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_CENTER;
     redBar.addControl(redText);
 
     // Barre bleue
-    const blueBar = new Rectangle();
+    const blueBar = new BABYLON.GUI.Rectangle();
     blueBar.width = "40%";
     blueBar.height = "4%";
     blueBar.color = "white";
     blueBar.background = "blue";
     blueBar.cornerRadius = 10;
-    blueBar.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_RIGHT;
+    blueBar.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_RIGHT;
     blueBar.right = "5%";
     blueBar.top = "5%";
-    blueBar.verticalAlignment = Control.VERTICAL_ALIGNMENT_TOP;
+    blueBar.verticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_TOP;
     ui.addControl(blueBar);
 
     // Texte dans barre bleue
-    const blueText = new TextBlock();
+    const blueText = new BABYLON.GUI.TextBlock();
     blueText.color = "white";
     blueText.fontSize = 24;
     blueText.text = "0%";
-    blueText.textHorizontalAlignment = Control.HORIZONTAL_ALIGNMENT_CENTER;
-    blueText.textVerticalAlignment = Control.VERTICAL_ALIGNMENT_CENTER;
+    blueText.textHorizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
+    blueText.textVerticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_CENTER;
     blueBar.addControl(blueText);
 
     return {

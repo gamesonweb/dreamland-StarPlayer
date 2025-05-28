@@ -1,16 +1,13 @@
-import { AdvancedDynamicTexture, TextBlock, Control } from "@babylonjs/gui";
-import {showEndGameScreen} from "./endGame.js";
-import {createHomeGameScene} from "./homeGame.js";
-export function createGameTimerUI(scene, zoneControl) {
-    const ui = AdvancedDynamicTexture.CreateFullscreenUI("UI");
+function createGameTimerUI(scene, zoneControl) {
+    const ui = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
 
-    const timerText = new TextBlock();
+    const timerText = new BABYLON.GUI.TextBlock();
     timerText.text = "02:00";
     timerText.color = "white";
     timerText.fontSize = "36px";
     timerText.top = "-45%";
-    timerText.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_CENTER;
-    timerText.verticalAlignment = Control.VERTICAL_ALIGNMENT_TOP;
+    timerText.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
+    timerText.verticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_TOP;
 
     ui.addControl(timerText);
 

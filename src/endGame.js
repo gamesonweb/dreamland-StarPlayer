@@ -1,10 +1,8 @@
-import * as GUI from "@babylonjs/gui";
-
-export function showEndGameScreen(scene, winnerTeamName, onReplay, onHome) {
-    const ui = GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI-End");
+function showEndGameScreen(scene, winnerTeamName, onReplay, onHome) {
+    const ui = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI-End");
 
     // Fond semi-transparent
-    const background = new GUI.Rectangle();
+    const background = new BABYLON.GUI.Rectangle();
     background.width = "100%";
     background.height = "100%";
     background.background = "#000000AA";
@@ -12,7 +10,7 @@ export function showEndGameScreen(scene, winnerTeamName, onReplay, onHome) {
     ui.addControl(background);
 
     // Texte gagnant
-    const winnerText = new GUI.TextBlock();
+    const winnerText = new BABYLON.GUI.TextBlock();
     winnerText.text = `L'équipe ${winnerTeamName} a gagné !`;
     winnerText.color = "white";
     winnerText.fontSize = "36px";
@@ -20,7 +18,7 @@ export function showEndGameScreen(scene, winnerTeamName, onReplay, onHome) {
     background.addControl(winnerText);
 
     // Bouton Rejouer
-    const replayButton = GUI.Button.CreateSimpleButton("replay", "Rejouer");
+    const replayButton = BABYLON.GUI.Button.CreateSimpleButton("replay", "Rejouer");
     replayButton.width = "150px";
     replayButton.height = "50px";
     replayButton.color = "white";
@@ -34,7 +32,7 @@ export function showEndGameScreen(scene, winnerTeamName, onReplay, onHome) {
     background.addControl(replayButton);
 
     // Bouton Accueil
-    const homeButton = GUI.Button.CreateSimpleButton("home", "Accueil");
+    const homeButton = BABYLON.GUI.Button.CreateSimpleButton("home", "Accueil");
     homeButton.width = "150px";
     homeButton.height = "50px";
     homeButton.color = "white";

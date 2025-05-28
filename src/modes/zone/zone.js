@@ -1,26 +1,24 @@
-import { MeshBuilder, Color3, StandardMaterial, Vector3 } from "@babylonjs/core";
-
 function getTeamColorBlend(redScore, blueScore) {
     const total = redScore + blueScore;
-    if (total === 0) return new Color3(1, 1, 0); // Jaune par défaut
+    if (total === 0) return new BABYLON.Color3(1, 1, 0); // Jaune par défaut
     const redRatio = redScore / total;
     const blueRatio = blueScore / total;
 
     // Interpolation entre rouge et bleu
-    return new Color3(
+    return new BABYLON.Color3(
         redRatio,
         0,
         blueRatio
     );
 }
 
-export function setupZoneControl(scene, teams) {
-    const zone = MeshBuilder.CreateCylinder("zone", { diameter: 13, height: 0.1 }, scene);
+function setupZoneControl(scene, teams) {
+    const zone = BABYLON.MeshBuilder.CreateCylinder("zone", { diameter: 13, height: 0.1 }, scene);
     zone.position.y = 0;
 
-    const mat = new StandardMaterial("zoneMat", scene);
-    mat.diffuseColor = new Color3(1, 1, 0);
-    mat.emissiveColor = new Color3(0.2, 0.2, 0.2);
+    const mat = new BABYLON.StandardMaterial("zoneMat", scene);
+    mat.diffuseColor = new BABYLON.Color3(1, 1, 0);
+    mat.emissiveColor = new BABYLON.Color3(0.2, 0.2, 0.2);
     zone.material = mat;
 
     let redScore = 0;
