@@ -1,6 +1,6 @@
 async function havokPhysics(scene) {
     const havok = await HavokPhysics({
-        locateFile: (file) => "assets/HavokPhysics.wasm"
+        locateFile: (file) => "./assets/HavokPhysics.wasm"
     });
     const hk = new BABYLON.HavokPlugin(true, havok);
     scene.enablePhysics(new BABYLON.Vector3(0, -9.81, 0), hk);
