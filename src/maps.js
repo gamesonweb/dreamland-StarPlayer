@@ -131,21 +131,21 @@ function getMaps() {
     return [
             {
                 name: "Plaine",
-                thumbnail: "/thumbnails/grass.jpg",
+                thumbnail: "./public/thumbnails/grass.jpg",
                 sceneBuilder: createGrassScene },
             {
                 name: "Hors Jeu 1",
-                thumbnail: "/thumbnails/horsJeu1.jpg" ,
+                thumbnail: "./public/thumbnails/horsJeu1.jpg" ,
                 sceneBuilder: createHorsJeu1Scene },
             {
                 name: "Neige",
-                thumbnail: "/thumbnails/snow.jpg" },
+                thumbnail: "./public/thumbnails/snow.jpg" },
             {
                 name: "Lave",
-                thumbnail: "/thumbnails/lava.jpg" },
+                thumbnail: "./public/thumbnails/lava.jpg" },
             {
                 name: "Ville",
-                thumbnail: "/thumbnails/city.jpg" },
+                thumbnail: "./public/thumbnails/city.jpg" },
 
     ];
 }
