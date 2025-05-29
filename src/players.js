@@ -177,33 +177,33 @@ function getCharacters(){
     return [
         {
             name: "La mariée en bleuuuu",
-            modelPath: "./public/models/personnages/",
+            modelPath: "./models/personnages/",
             modelFile: "perso1.glb",
-            thumbnail: "./public/thumbnails/grass.jpg",
+            thumbnail: "./thumbnails/grass.jpg",
             weaponType: "gun",
             maxHP: 7000
         },
         {
             name: "Colt",
-            modelPath: "./public/models/personnages/",
+            modelPath: "./models/personnages/",
             modelFile: "colt_player_geo.glb",
-            thumbnail: "./public/thumbnails/Colt.png",
+            thumbnail: "./thumbnails/Colt.png",
             weaponType: "bow",
             maxHP: 5000
         },
         {
             name: "Piper",
-            modelPath: "./public/models/personnages/",
+            modelPath: "./models/personnages/",
             modelFile: "mariposa_piper.glb",
-            thumbnail: "./public/thumbnails/Piper.png",
+            thumbnail: "./thumbnails/Piper.png",
             weaponType: "staff",
             maxHP: 3500
         },
         {
             name: "Nita",
-            modelPath: "./public/models/personnages/",
+            modelPath: "./models/personnages/",
             modelFile: "runner_nita.glb",
-            thumbnail: "./public/thumbnails/Nita.png",
+            thumbnail: "./thumbnails/Nita.png",
             weaponType: "shield",
             maxHP: 4000
         }
