@@ -142,7 +142,7 @@ function showEndGameScreen(scene, winnerTeamName, onReplay, onHome) {
 
     // Texte gagnant
     const winnerText = new BABYLON.GUI.TextBlock();
-    winnerText.text = `L'équipe ${winnerTeamName} a gagné !`;
+    winnerText.text = winnerTeamName === "égalité" ? "Égalité !" : `L'équipe ${winnerTeamName} a gagné !`;
     winnerText.color = "white";
     winnerText.fontSize = "36px";
     winnerText.top = "-10%";
