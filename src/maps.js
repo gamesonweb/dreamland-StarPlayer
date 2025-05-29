@@ -129,23 +129,27 @@ function createMapsScene(engine, canvas, setScene) {
 
 function getMaps() {
     return [
-            {
-                name: "Plaine",
-                thumbnail: "./public/thumbnails/grass.jpg",
-                sceneBuilder: createGrassScene },
-            {
-                name: "Hors Jeu 1",
-                thumbnail: "./public/thumbnails/horsJeu1.jpg" ,
-                sceneBuilder: createHorsJeu1Scene },
-            {
-                name: "Neige",
-                thumbnail: "./public/thumbnails/snow.jpg" },
-            {
-                name: "Lave",
-                thumbnail: "./public/thumbnails/lava.jpg" },
-            {
-                name: "Ville",
-                thumbnail: "./public/thumbnails/city.jpg" },
-
+        {
+            name: "Plaine",
+            thumbnail: "./thumbnails/grass.jpg",
+            sceneBuilder: createGrassScene
+        },
+        {
+            name: "Hors Jeu 1",
+            thumbnail: "./thumbnails/horsJeu1.jpg",
+            sceneBuilder: createHorsJeu1Scene
+        },
+        {
+            name: "Neige",
+            thumbnail: "./thumbnails/snow.jpg"
+        },
+        {
+            name: "Lave",
+            thumbnail: "./thumbnails/lava.jpg"
+        },
+        {
+            name: "Ville",
+            thumbnail: "./thumbnails/city.jpg"
+        }
     ];
 }
