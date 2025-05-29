@@ -134,8 +134,9 @@ function getMaps() {
                 thumbnail: "/thumbnails/grass.jpg",
                 sceneBuilder: createGrassScene },
             {
-                name: "Désert",
-                thumbnail: "/thumbnails/desert.jpg" },
+                name: "Hors Jeu 1",
+                thumbnail: "/thumbnails/horsJeu1.jpg" ,
+                sceneBuilder: createHorsJeu1Scene },
             {
                 name: "Neige",
                 thumbnail: "/thumbnails/snow.jpg" },

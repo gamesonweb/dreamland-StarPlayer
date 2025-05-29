@@ -180,28 +180,32 @@ function getCharacters(){
             modelPath: "/models/personnages/",
             modelFile: "perso1.glb",
             thumbnail: "/thumbnails/grass.jpg",
-            weaponType: "gun"
+            weaponType: "gun",
+            maxHP: 7000
         },
         {
             name: "Colt",
             modelPath: "/models/personnages/",
             modelFile: "colt_player_geo.glb",
             thumbnail: "/thumbnails/Colt.png",
-            weaponType: "bow"
+            weaponType: "bow",
+            maxHP: 5000
         },
         {
             name: "Piper",
             modelPath: "/models/personnages/",
             modelFile: "mariposa_piper.glb",
             thumbnail: "/thumbnails/Piper.png",
-            weaponType: "staff"
+            weaponType: "staff",
+            maxHP: 3500
         },
         {
             name: "Nita",
             modelPath: "/models/personnages/",
             modelFile: "runner_nita.glb",
             thumbnail: "/thumbnails/Nita.png",
-            weaponType: "shield"
+            weaponType: "shield",
+            maxHP: 4000
         }
     ];
 }

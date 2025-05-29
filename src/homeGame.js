@@ -129,10 +129,4 @@ function createHomeGameScene(engine, canvas, setScene) {
     return scene;
 }
 
-function normalizeMeshHeight(mesh, targetHeight = 2) {
-    const boundingInfo = mesh.getHierarchyBoundingVectors();
-    const size = boundingInfo.max.subtract(boundingInfo.min);
-    const height = size.y;
-    const scaleFactor = targetHeight / height;
-    mesh.scaling = new BABYLON.Vector3(scaleFactor, scaleFactor, scaleFactor);
-}
+

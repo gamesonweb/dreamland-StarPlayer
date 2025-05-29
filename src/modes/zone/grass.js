@@ -1,52 +1,8 @@
-// État clavier global
-const inputStates = {
-    up: false,
-    down: false,
-    left: false,
-    right: false,
-    keyF: false,
-};
-
-function setupInput(scene) {
-    scene.onKeyboardObservable.add((kbInfo) => {
-        const pressed = kbInfo.type === BABYLON.KeyboardEventTypes.KEYDOWN; // 1 = KEYDOWN
-        switch (kbInfo.event.key) {
-            case "z":
-            case "ArrowUp":
-                inputStates.up = pressed;
-                break;
-            case "s":
-            case "ArrowDown":
-                inputStates.down = pressed;
-                break;
-            case "q":
-            case "ArrowLeft":
-                inputStates.left = pressed;
-                break;
-            case "d":
-            case "ArrowRight":
-                inputStates.right = pressed;
-                break;
-            case "f":
-                inputStates.keyF = pressed;
-                break;
-        }
-    });
-}
-
 async function createGrassScene(engine, canvas, setScene) {
     const scene = new BABYLON.Scene(engine);
 
-    // Caméra
-    let camera = new BABYLON.FreeCamera("freeCamera", new BABYLON.Vector3(0, 10, 0), scene);
-    camera.attachControl(canvas, true);
-    camera.inputs.clear();
-
-    const havok = await HavokPhysics({
-        locateFile: (file) => "assets/HavokPhysics.wasm"
-    });
-    const hk = new BABYLON.HavokPlugin(true, havok);
-    scene.enablePhysics(new BABYLON.Vector3(0, -9.81, 0), hk);
+    createFreeCamera(scene, canvas);
+    await havokPhysics(scene);
 
     new BABYLON.HemisphericLight("light", new BABYLON.Vector3(0, 1, 0), scene);
 
@@ -54,7 +10,6 @@ async function createGrassScene(engine, canvas, setScene) {
 
     let playerMesh = null;
     let playerAnimations = null;
-    let followCamera = null;
     let weapon = null;
 
     const character = getSelectedCharacter();
@@ -68,7 +23,7 @@ async function createGrassScene(engine, canvas, setScene) {
 
     // Crée la zone de capture
     const zoneController = setupZoneControl(scene, teams);
-    const timerUI = createGameTimerUI(scene, zoneController);
+    createGameTimerUI(scene, zoneController);
 
     // Création d'AssetsManager
     const assetsManager = new BABYLON.AssetsManager(scene);
@@ -95,20 +50,18 @@ async function createGrassScene(engine, canvas, setScene) {
             playerMesh = task.loadedMeshes[0];
             playerMesh.name = "PlayerMesh";
             playerMesh.checkCollisions = true;
-            playerMesh.showBoundingBox = true;
             playerMesh.position = new BABYLON.Vector3(0, 0, 32);
-            playerMesh.scaling = new BABYLON.Vector3(2, 2, 2);
+            normalizeMeshHeight(playerMesh, 2);
 
             playerAnimations = task.loadedAnimationGroups;
 
-            // Caméra suiveuse
-            followCamera = new BABYLON.FollowCamera("followCamera", new BABYLON.Vector3(0, 10, -10), scene);
-            followCamera.lockedTarget = playerMesh;
-            followCamera.radius = 10;
-            followCamera.heightOffset = 40;
-            followCamera.rotationOffset = 180;
-            followCamera.inputs.clear();
-            scene.activeCamera = followCamera;
+            scene.activeCamera = createFollowCamera(scene, playerMesh);
+            character.mesh = playerMesh;
+            playerMesh.Hp = character.maxHP;
+            playerMesh.maxHp = character.maxHP;
+
+            playerMesh.hpGui = createHPBar(scene, playerMesh);
+            playerMesh.updateHpBar = updateHpBar.bind(playerMesh);
 
             switch (character.weaponType) {
                 case "gun":
@@ -129,6 +82,9 @@ async function createGrassScene(engine, canvas, setScene) {
                 clone.position = playerMesh.position.add(new BABYLON.Vector3(i + 1, 0, 0));
                 teams.blue.push(clone);
                 addCloneAI(clone, teams.red, scene, "blue", projectiles);
+
+                clone.hpGui = createHPBar(scene, clone);
+                clone.updateHpBar = updateHpBar.bind(clone);
             }
 
             // Clones rouges (3)
@@ -137,6 +93,8 @@ async function createGrassScene(engine, canvas, setScene) {
                 clone.position = playerMesh.position.add(new BABYLON.Vector3(-i - 1, 0, -40));
                 teams.red.push(clone);
                 addCloneAI(clone, teams.blue, scene, "red", projectiles);
+                clone.hpGui = createHPBar(scene, clone);
+                clone.updateHpBar = updateHpBar.bind(clone);
             }
         };
     }
@@ -196,4 +154,10 @@ async function createGrassScene(engine, canvas, setScene) {
     });
 
     return scene;
+}
+function updateHpBar()  {
+    const ratio = Math.max(this.hp / this.hpMax, 0);
+    this.hpGui.hpBarFill.width = ratio;
+    this.hpGui.hpFloatingText.text = this.hp.toString();
+    this.hpGui.hpBarFill.background = ratio <= 0.3 ? "red" : "green";
 }

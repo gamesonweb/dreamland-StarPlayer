@@ -1,7 +1,4 @@
-// scenes/grass/cloneAI.js
-import { Vector3, MeshBuilder, StandardMaterial, Color3 } from "@babylonjs/core";
-
-export function addCloneAI(clone, enemies, scene, team, projectiles) {
+function addCloneAI(clone, enemies, scene, team, projectiles) {
     const speed = 0.03;
     const shootCooldown = 1000;
     let lastShotTime = 0;
@@ -13,7 +10,7 @@ export function addCloneAI(clone, enemies, scene, team, projectiles) {
         let closestDistance = Infinity;
 
         for (const enemy of enemies) {
-            const distance = Vector3.Distance(clone.position, enemy.position);
+            const distance = BABYLON.Vector3.Distance(clone.position, enemy.position);
             if (distance < closestDistance) {
                 closestDistance = distance;
                 closestEnemy = enemy;
@@ -34,10 +31,10 @@ export function addCloneAI(clone, enemies, scene, team, projectiles) {
 }
 
 function fireProjectile(origin, direction, scene, team, projectiles) {
-    const projectile = MeshBuilder.CreateSphere("projectile", { diameter: 0.3 }, scene);
-    projectile.position = origin.position.clone().add(new Vector3(0, 1, 0));
-    const mat = new StandardMaterial("projMat", scene);
-    mat.diffuseColor = team === "red" ? Color3.Red() : Color3.Blue();
+    const projectile = BABYLON.MeshBuilder.CreateSphere("projectile", { diameter: 0.3 }, scene);
+    projectile.position = origin.position.clone().add(new BABYLON.Vector3(0, 1, 0));
+    const mat = new BABYLON.StandardMaterial("projMat", scene);
+    mat.diffuseColor = team === "red" ? BABYLON.Color3.Red() : BABYLON.Color3.Blue();
     projectile.material = mat;
 
     const velocity = direction.scale(0.3);
