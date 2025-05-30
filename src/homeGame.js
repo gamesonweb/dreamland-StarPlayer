@@ -68,11 +68,11 @@ function createHomeGameScene(engine, canvas, setScene) {
         task.onSuccess = (task) => {
             const mesh = task.loadedMeshes[0];
             mesh.name = "ActiveCharacter";
-            mesh.position = new BABYLON.Vector3(-2.4, -0.5, 0);
+            mesh.position = new BABYLON.Vector3(0, -0.5, 0);
             mesh.rotation = new BABYLON.Vector3(0, 0, 0);
 
             // Appliquer la mise à l’échelle normalisée (même logique que createPlayersScene)
-            normalizeMeshHeight(mesh, 2);
+            normalizeMeshHeight(mesh, 3);
 
             // Activer le mesh
             mesh.setEnabled(true);
@@ -121,15 +121,30 @@ function createHomeGameScene(engine, canvas, setScene) {
     btnPlay.width = "200px";
     btnPlay.height = "70px";
     btnPlay.color = "white";
-    btnPlay.background = "red";
-    btnPlay.cornerRadius = 10;
+    btnPlay.background = "#FF3B3B"; // Couleur normale (rouge)
+    btnPlay.cornerRadius = 12;
     btnPlay.thickness = 0;
-    btnPlay.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_RIGHT;
+
+// Texte
     const txtPlay = new BABYLON.GUI.TextBlock();
     txtPlay.text = "Jouer";
     txtPlay.color = "white";
-    txtPlay.fontSize = 24;
+    txtPlay.fontSize = 26;
     btnPlay.addControl(txtPlay);
+
+// Survol (hover)
+    btnPlay.onPointerEnterObservable.add(() => {
+        btnPlay.background = "#FF5E5E"; // Rouge plus clair au survol
+        btnPlay.scaleX = 1.05; // Petit agrandissement
+        btnPlay.scaleY = 1.05;
+    });
+
+    btnPlay.onPointerOutObservable.add(() => {
+        btnPlay.background = "#FF3B3B"; // Retour à la couleur normale
+        btnPlay.scaleX = 1;
+        btnPlay.scaleY = 1;
+    });
+
     btnPlay.onPointerUpObservable.add(async () => {
         if (!getSelectedCharacter() || !getSelectedMap()) {
             alert("Tu dois choisir un personnage et une map !");
@@ -143,19 +158,19 @@ function createHomeGameScene(engine, canvas, setScene) {
 
 
     // Bouton paramètres - en haut à droite
-    const btnSettings = new Button("btnSettings");
+    const btnSettings = new BABYLON.GUI.Button("btnSettings");
     btnSettings.width = "50px";
     btnSettings.height = "50px";
     btnSettings.cornerRadius = 25;
     btnSettings.color = "white";
     btnSettings.background = "gray";
     btnSettings.thickness = 0;
-    btnSettings.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_RIGHT;
-    btnSettings.verticalAlignment = Control.VERTICAL_ALIGNMENT_TOP;
+    btnSettings.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_RIGHT;
+    btnSettings.verticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_TOP;
     btnSettings.paddingRight = "10px";
     btnSettings.paddingTop = "10px";
 
-    const txtGear = new TextBlock();
+    const txtGear = new BABYLON.GUI.TextBlock();
     txtGear.text = "⚙️";
     txtGear.color = "white";
     txtGear.fontSize = 24;

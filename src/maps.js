@@ -136,7 +136,7 @@ function getMaps() {
         },
         {
             name: "HorsJeu2",
-            thumbnail: "./thumbnails/HorsJeu2.jpg",
+            thumbnail: "./thumbnails/HorsJeu2.png",
             sceneBuilder: createGrassScene
         },
 
