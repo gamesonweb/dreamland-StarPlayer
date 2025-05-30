@@ -131,22 +131,14 @@ function getMaps() {
     return [
         {
             name: "Hors Jeu 1",
-            thumbnail: "./thumbnails/HorsJeu1.jpg",
+            thumbnail: "./public/thumbnails/HorsJeu1.jpg",
             sceneBuilder: createHorsJeu1Scene
         },
         {
             name: "HorsJeu2",
-            thumbnail: "./thumbnails/HorsJeu2.png",
+            thumbnail: "./public/thumbnails/HorsJeu2.png",
             sceneBuilder: createGrassScene
         },
 
-        {
-            name: "Neige",
-            thumbnail: "./thumbnails/snow.jpg"
-        },
-        {
-            name: "Lave",
-            thumbnail: "./thumbnails/lava.jpg"
-        },
     ];
 }
