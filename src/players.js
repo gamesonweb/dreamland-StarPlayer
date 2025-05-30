@@ -177,17 +177,17 @@ function getCharacters(){
     return [
         {
             name: "Wendy",
-            modelPath: "./models/personnages/",
+            modelPath: "./public/models/personnages/",
             modelFile: "wendy.glb",
-            thumbnail: "./thumbnails/grass.jpg",
+            thumbnail: "./public/thumbnails/grass.jpg",
             weaponType: "gun",
             maxHP: 7000
         },
         {
             name: "Colt",
-            modelPath: "./models/personnages/",
+            modelPath: "./public/models/personnages/",
             modelFile: "colt_player_geo.glb",
-            thumbnail: "./thumbnails/Colt.png",
+            thumbnail: "./public/thumbnails/grass.jpg",
             weaponType: "bow",
             maxHP: 5000
         },
