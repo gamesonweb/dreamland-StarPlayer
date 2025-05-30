@@ -10,8 +10,10 @@ async function createHorsJeu1Scene(engine, canvas, setScene) {
 
     character = getSelectedCharacter();
 
+    await createGround(scene);
     scene.tank = await createTank(scene, character);
     createHeroDude(scene, character.modelFile);
+
 
     // Ajoute ça pour animer ton tank
     scene.onBeforeRenderObservable.add(() => {
@@ -30,227 +32,227 @@ async function createHorsJeu1Scene(engine, canvas, setScene) {
     return scene;
 }
 
-
-
-
-
-
 function createGround(scene) {
-    const assetsManager = new BABYLON.AssetsManager(scene);
-    const herbeMat = new BABYLON.StandardMaterial("herbeMat", scene);
-    herbeMat.diffuseColor = BABYLON.Color3.FromHexString("#34c759"); // Vert clair
-    const mapTask = assetsManager.addMeshTask("map task", "", "models/map/", "MapStarPlayerHorsJeu1.glb");
-    mapTask.onSuccess = (task) => {
-        task.loadedMeshes.forEach(mesh => {
-            if (mesh.name.includes("Herbes1") || mesh.name.includes("Maillage")) {
-                mesh.checkCollisions = false;
-                mesh.isPickable = false;
-            } else {
-                mesh.checkCollisions = true;
-                mesh.isPickable = true;
-                const shape = new BABYLON.PhysicsShapeMesh(mesh, scene);
-                const body = new BABYLON.PhysicsBody(mesh, BABYLON.PhysicsMotionType.STATIC, false, scene);
-                body.shape = shape;
-            }
-        });
-
-        let groundMesh = task.loadedMeshes.find(m => m.name.includes("Plan.007"));
-        if (groundMesh) {
-            const size = 512;
-            const squares = 33;
-            const texture = new BABYLON.DynamicTexture("dynamicChecker", size, scene, true);
-            const ctx = texture.getContext();
-            const squareSize = size / squares;
-            const color1 = "#e1c08d";
-            const color2 = "#b28850";
-
-            for (let y = 0; y < squares; y++) {
-                for (let x = 0; x < squares; x++) {
-                    ctx.fillStyle = (x + y) % 2 === 0 ? color1 : color2;
-                    ctx.fillRect(x * squareSize, y * squareSize, squareSize, squareSize);
-                }
-            }
-
-            texture.update();
-
-            const checkerMaterial = new BABYLON.StandardMaterial("checkerMat", scene);
-            checkerMaterial.diffuseTexture = texture;
-            checkerMaterial.specularColor = new BABYLON.Color3(0, 0, 0);
-            checkerMaterial.backFaceCulling = false;
-
-            groundMesh.material = checkerMaterial;
-        }
-
-        // Rotation globale de la racine
-        if (task.loadedMeshes.length > 0) {
-            let root = task.loadedMeshes[0];
-            root.rotation = new BABYLON.Vector3(0, Math.PI, 0);
-            scene.ground = root;
-        }
-    };
-
-    mapTask.onError = (task, message, exception) => {
-        console.error("Erreur de chargement de la map:", message, exception);
-    };
-
-    assetsManager.load();
-    }
-
-function createTank(scene, character ) {
-    const assetsManager = new BABYLON.AssetsManager(scene);
-    const tankTask = assetsManager.addMeshTask("character task", "", character.modelPath, character.modelFile);
-    tankTask.onSuccess = (task) => {
-        tank = task.loadedMeshes[0];
-        tank.name = "tank";
-        tank.position = new BABYLON.Vector3(0, 0.6, 0); // Position initiale
-        normalizeMeshHeight(tank, 2);
-        tank.checkCollisions = true;
-        tank.speed = 0.1; // Vitesse de déplacement
-
-        character.mesh = tank; // Associer le mesh du tank au personnage
-        tank.hpMax = character.maxHP; // définit les PV max du tank
-        tank.hp = tank.hpMax;         // initialise les PV actuels à la valeur max
-
-        tank.frontVector = new BABYLON.Vector3(0, 0, 1); // vers l’avant
-
-        scene.activeCamera = createFollowCamera(scene, tank);
-        tank.move = function () {
-            if (this.isDead) return;
-            if (inputStates.up) {
-                this.moveWithCollisions(this.frontVector.multiplyByFloats(-this.speed, -this.speed, this.speed));
-            }
-            if (inputStates.down) {
-                this.moveWithCollisions(this.frontVector.multiplyByFloats(this.speed, this.speed, -this.speed));
-            }
-            if (inputStates.left) {
-                const left = new BABYLON.Vector3(-this.frontVector.z, 0, -this.frontVector.x).normalize();
-                this.moveWithCollisions(left.scale(this.speed));
-            }
-            if (inputStates.right) {
-                const right = new BABYLON.Vector3(this.frontVector.z, 0, this.frontVector.x).normalize();
-                this.moveWithCollisions(right.scale(this.speed));
-            }
-            this.rotation.y = Math.atan2(this.frontVector.x, this.frontVector.z);
-        };
-
-        tank.canFire = true;
-        tank.fireAfter = 0.3;
-
-        tank.fire = function () {
-            if (this.isDead || !inputStates.space || !this.canFire) return;
-            this.canFire = false;
-
-            setTimeout(() => this.canFire = true, 1000 * this.fireAfter);
-
-            let cannonball = BABYLON.MeshBuilder.CreateSphere("cannonball", {diameter: 0.5}, scene);
-            cannonball.material = new BABYLON.StandardMaterial("Fire", scene);
-            cannonball.material.diffuseTexture = new BABYLON.Texture("images/Fire.jpg", scene);
-
-            cannonball.position = this.position.add(this.frontVector.scale(5));
-
-            let speed = 1;
-            let direction = this.frontVector.clone();
-            let maxDistance = 25;
-            let traveled = 0;
-
-            scene.onBeforeRenderObservable.add(() => {
-                if (!cannonball) return;
-
-                let movement = direction.scale(speed);
-                cannonball.position.addInPlace(movement);
-                traveled += speed;
-
-                // Collision avec les dudes
-                for (let dude of scene.dudes) {
-                    if (dude.isDead) continue;
-                    const dist = BABYLON.Vector3.Distance(cannonball.position, dude.position);
-                    if (dist < 2) {
-                        dude.hp -= 5;
-                        dude.updateHpBar();
-                        if (dude.hp <= 0) {
-                            dude.die();
-                        }
-                        cannonball.dispose();
-                        cannonball = null;
-                        return;
-                    }
-                }
-
-                if (traveled > maxDistance) {
-                    cannonball.dispose();
-                    cannonball = null;
+    return new Promise((resolve, reject) => {
+        const assetsManager = new BABYLON.AssetsManager(scene);
+        const herbeMat = new BABYLON.StandardMaterial("herbeMat", scene);
+        herbeMat.diffuseColor = BABYLON.Color3.FromHexString("#34c759"); // Vert clair
+        const mapTask = assetsManager.addMeshTask("map task", "", "./public/models/map/", "MapStarPlayerHorsJeu1.glb");
+        mapTask.onSuccess = (task) => {
+            task.loadedMeshes.forEach(mesh => {
+                if (mesh.name.includes("Herbes1") || mesh.name.includes("Maillage")) {
+                    mesh.checkCollisions = false;
+                    mesh.isPickable = false;
+                } else {
+                    mesh.checkCollisions = true;
+                    mesh.isPickable = true;
+                    const shape = new BABYLON.PhysicsShapeMesh(mesh, scene);
+                    const body = new BABYLON.PhysicsBody(mesh, BABYLON.PhysicsMotionType.STATIC, false, scene);
+                    body.shape = shape;
                 }
             });
 
-        };
+            let groundMesh = task.loadedMeshes.find(m => m.name.includes("Plan.007"));
+            if (groundMesh) {
+                const size = 512;
+                const squares = 33;
+                const texture = new BABYLON.DynamicTexture("dynamicChecker", size, scene, true);
+                const ctx = texture.getContext();
+                const squareSize = size / squares;
+                const color1 = "#e1c08d";
+                const color2 = "#b28850";
 
-        tank.hpGui = createHPBar(scene, tank);
-
-        tank.updateHpBar = function () {
-            const ratio = Math.max(this.hp / this.hpMax, 0);
-            this.hpGui.hpBarFill.width = ratio;
-            this.hpGui.hpFloatingText.text = this.hp.toString();
-            this.hpGui.hpBarFill.background = ratio <= 0.3 ? "red" : "green";
-        };
-
-        tank.updateHpBar();
-
-
-        tank.die = function () {
-            this.isDead = true;
-            this.setEnabled(false); // Masquer le tank
-            this.hp = 0;
-            this.updateHpBar();
-            this.hpGui.hpFloatingText.isVisible = false; // Effacer le texte des HP
-
-            // Retirer la barre de vie
-            this.hpGui.hpBarContainer.isVisible = false;
-
-            const gui = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("deathGui");
-            // Créer un texte de mort avec décompte
-            const deathText = new BABYLON.GUI.TextBlock("deathText");
-            deathText.color = "white";
-            deathText.fontSize = 24;
-            deathText.top = "-30%";
-            gui.addControl(deathText);
-
-            let timeLeft = 5;
-            deathText.text = `💀 Tank détruit ! Respawn dans ${timeLeft}s...`;
-
-            const intervalId = setInterval(() => {
-                timeLeft--;
-                if (timeLeft > 0) {
-                    deathText.text = `💀 Tank détruit ! Respawn dans ${timeLeft}s...`;
-                } else {
-                    clearInterval(intervalId);
-                    deathText.dispose();
-                    this.respawn();
+                for (let y = 0; y < squares; y++) {
+                    for (let x = 0; x < squares; x++) {
+                        ctx.fillStyle = (x + y) % 2 === 0 ? color1 : color2;
+                        ctx.fillRect(x * squareSize, y * squareSize, squareSize, squareSize);
+                    }
                 }
-            }, 1000);
+
+                texture.update();
+
+                const checkerMaterial = new BABYLON.StandardMaterial("checkerMat", scene);
+                checkerMaterial.diffuseTexture = texture;
+                checkerMaterial.specularColor = new BABYLON.Color3(0, 0, 0);
+                checkerMaterial.backFaceCulling = false;
+
+                groundMesh.material = checkerMaterial;
+            }
+
+            // Rotation globale de la racine
+            if (task.loadedMeshes.length > 0) {
+                let root = task.loadedMeshes[0];
+                root.rotation = new BABYLON.Vector3(0, Math.PI, 0);
+                scene.ground = root;
+            }
+            resolve();
         };
 
-
-        tank.respawn = function () {
-            // Réinitialise la vie
-            this.hp = this.hpMax;
-            this.updateHpBar();
-            this.hpGui.hpFloatingText.isVisible = true;
-
-            // Position de respawn
-            this.position = new BABYLON.Vector3(0, 0.6, 0); // Changer selon le besoin
-            this.setEnabled(true);
-            this.isDead = false;
-
-            // Réaffiche la barre de vie
-            this.hpGui.hpBarContainer.isVisible = true;
+        mapTask.onError = (task, message, exception) => {
+            console.error("Erreur de chargement de la map:", message, exception);
         };
 
-
+        assetsManager.load();
+    });
     }
-    tankTask.onError = (task, message, exception) => {
-        console.error("Erreur de chargement du tank :", message, exception);
-    };
-    assetsManager.load();
+
+function createTank(scene, character ) {
+    return new Promise((resolve, reject) => {
+        const assetsManager = new BABYLON.AssetsManager(scene);
+        const tankTask = assetsManager.addMeshTask("character task", "", character.modelPath, character.modelFile);
+        tankTask.onSuccess = (task) => {
+            tank = task.loadedMeshes[0];
+            tank.name = "tank";
+            tank.position = new BABYLON.Vector3(0, 0.6, 0); // Position initiale
+            normalizeMeshHeight(tank, 2);
+            tank.checkCollisions = true;
+            tank.speed = 0.1; // Vitesse de déplacement
+
+            character.mesh = tank; // Associer le mesh du tank au personnage
+            tank.hpMax = character.maxHP; // définit les PV max du tank
+            tank.hp = tank.hpMax;         // initialise les PV actuels à la valeur max
+
+            tank.frontVector = new BABYLON.Vector3(0, 0, 1); // vers l’avant
+
+            scene.activeCamera = createFollowCamera(scene, tank);
+            tank.move = function () {
+                if (this.isDead) return;
+                if (inputStates.up) {
+                    this.moveWithCollisions(this.frontVector.multiplyByFloats(-this.speed, -this.speed, this.speed));
+                }
+                if (inputStates.down) {
+                    this.moveWithCollisions(this.frontVector.multiplyByFloats(this.speed, this.speed, -this.speed));
+                }
+                if (inputStates.left) {
+                    const left = new BABYLON.Vector3(-this.frontVector.z, 0, -this.frontVector.x).normalize();
+                    this.moveWithCollisions(left.scale(this.speed));
+                }
+                if (inputStates.right) {
+                    const right = new BABYLON.Vector3(this.frontVector.z, 0, this.frontVector.x).normalize();
+                    this.moveWithCollisions(right.scale(this.speed));
+                }
+                this.rotation.y = Math.atan2(this.frontVector.x, this.frontVector.z);
+            };
+
+            tank.canFire = true;
+            tank.fireAfter = 0.3;
+
+            tank.fire = function () {
+                if (this.isDead || !inputStates.space || !this.canFire) return;
+                this.canFire = false;
+
+                setTimeout(() => this.canFire = true, 1000 * this.fireAfter);
+
+                let cannonball = BABYLON.MeshBuilder.CreateSphere("cannonball", {diameter: 0.5}, scene);
+                cannonball.material = new BABYLON.StandardMaterial("Fire", scene);
+                cannonball.material.diffuseTexture = new BABYLON.Texture("images/Fire.jpg", scene);
+
+                cannonball.position = this.position.add(this.frontVector.scale(5));
+
+                let speed = 1;
+                let direction = this.frontVector.clone();
+                let maxDistance = 25;
+                let traveled = 0;
+
+                scene.onBeforeRenderObservable.add(() => {
+                    if (!cannonball) return;
+
+                    let movement = direction.scale(speed);
+                    cannonball.position.addInPlace(movement);
+                    traveled += speed;
+
+                    // Collision avec les dudes
+                    for (let dude of scene.dudes) {
+                        if (dude.isDead) continue;
+                        const dist = BABYLON.Vector3.Distance(cannonball.position, dude.position);
+                        if (dist < 2) {
+                            dude.hp -= 5;
+                            dude.updateHpBar();
+                            if (dude.hp <= 0) {
+                                dude.die();
+                            }
+                            cannonball.dispose();
+                            cannonball = null;
+                            return;
+                        }
+                    }
+
+                    if (traveled > maxDistance) {
+                        cannonball.dispose();
+                        cannonball = null;
+                    }
+                });
+
+            };
+
+            tank.hpGui = createHPBar(scene, tank);
+
+            tank.updateHpBar = function () {
+                const ratio = Math.max(this.hp / this.hpMax, 0);
+                this.hpGui.hpBarFill.width = ratio;
+                this.hpGui.hpFloatingText.text = this.hp.toString();
+                this.hpGui.hpBarFill.background = ratio <= 0.3 ? "red" : "green";
+            };
+
+            tank.updateHpBar();
+
+
+            tank.die = function () {
+                this.isDead = true;
+                this.setEnabled(false); // Masquer le tank
+                this.hp = 0;
+                this.updateHpBar();
+                this.hpGui.hpFloatingText.isVisible = false; // Effacer le texte des HP
+
+                // Retirer la barre de vie
+                this.hpGui.hpBarContainer.isVisible = false;
+
+                const gui = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("deathGui");
+                // Créer un texte de mort avec décompte
+                const deathText = new BABYLON.GUI.TextBlock("deathText");
+                deathText.color = "white";
+                deathText.fontSize = 24;
+                deathText.top = "-30%";
+                gui.addControl(deathText);
+
+                let timeLeft = 5;
+                deathText.text = `💀 Tank détruit ! Respawn dans ${timeLeft}s...`;
+
+                const intervalId = setInterval(() => {
+                    timeLeft--;
+                    if (timeLeft > 0) {
+                        deathText.text = `💀 Tank détruit ! Respawn dans ${timeLeft}s...`;
+                    } else {
+                        clearInterval(intervalId);
+                        deathText.dispose();
+                        this.respawn();
+                    }
+                }, 1000);
+            };
+
+
+            tank.respawn = function () {
+                // Réinitialise la vie
+                this.hp = this.hpMax;
+                this.updateHpBar();
+                this.hpGui.hpFloatingText.isVisible = true;
+
+                // Position de respawn
+                this.position = new BABYLON.Vector3(0, 0.6, 0); // Changer selon le besoin
+                this.setEnabled(true);
+                this.isDead = false;
+
+                // Réaffiche la barre de vie
+                this.hpGui.hpBarContainer.isVisible = true;
+            };
+
+            resolve(tank);
+        }
+        tankTask.onError = (task, message, exception) => {
+            console.error("Erreur de chargement du tank :", message, exception);
+        };
+        assetsManager.load();
+    });
 }
 
 

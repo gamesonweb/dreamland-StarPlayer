@@ -36,7 +36,7 @@ class FireGun extends Weapon {
     }
 }
 
-export class Sword extends Weapon {
+class Sword extends Weapon {
     fire(inputStates) {
         if (!inputStates.keyF || !this.gunMesh || !this.canFire) return;
 

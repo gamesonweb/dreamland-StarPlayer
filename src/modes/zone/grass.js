@@ -29,7 +29,7 @@ async function createGrassScene(engine, canvas, setScene) {
     const assetsManager = new BABYLON.AssetsManager(scene);
 
     // Tâche pour charger la map
-    const mapTask = assetsManager.addMeshTask("map task", "", "models/map/", "Dueling-Beetles.glb");
+    const mapTask = assetsManager.addMeshTask("map task", "", "./public/models/map/", "Dueling-Beetles.glb");
     mapTask.onSuccess = (task) => {
         task.loadedMeshes.forEach(mesh => {
             if (mesh.getTotalVertices() > 0) {
