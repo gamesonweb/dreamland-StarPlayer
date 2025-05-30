@@ -1,6 +1,26 @@
-# StarPlayer
-Equipe composé de : 
-VARELA TAVARES Catia
-BOSSELUT Jauris
+# StarPlayer - Jeu 3D multijoueur inspiré de Brawl Stars
 
-[![Review Assignment Due Date](https://classroom.github.com/assets/deadline-readme-button-22041afd0340ce965d47ae6ef1cefeee28c7c493a6346c4f15d667ab976d596c.svg)](https://classroom.github.com/a/tcwhlYLU)
+## Equipe :
+VARELA TAVARES Catia M1 MIAGE
+BOSSELUT Jauris M1 MIAGE
+
+## Description :
+
+StarPlayer est un jeu multijoueur en 3D développé avec Babylon.js. Le joueur contrôle un personnage dans une arène et affronte d'autres joueurs en mode Zone réservée. Le jeu propose une sélection de personnages, des cartes variées, et des clones bots.
+
+## Fonctionnalités principales
+
+- Sélection de personnages avec rotation et aperçu 3D
+- Un mode de jeu avec plusieurs maps
+- Animation fluide des personnages avec modèles GLB
+- Interface utilisateur immersive avec Babylon GUI
+- Chargement avec animation vidéo personnalisée
+- Clones
+- Affichage du résultat
+
+## Technologies utilisées
+
+- Babylon.js
+- JavaScript
+- Modèles 3D au format GLB
+- Vidéo MP4 pour les animations de chargement
