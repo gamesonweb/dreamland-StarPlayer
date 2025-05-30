@@ -187,7 +187,7 @@ function getCharacters(){
             name: "Colt",
             modelPath: "./public/models/personnages/",
             modelFile: "colt_player_geo.glb",
-            thumbnail: "./public/thumbnails/Colt.jpg",
+            thumbnail: "./public/thumbnails/Colt.png",
             weaponType: "guns",
             maxHP: 5000
         },
