@@ -7,23 +7,7 @@ function createHomeGameScene(engine, canvas, setScene) {
     camera.inputs.clear();
     // Lumière
     new BABYLON.HemisphericLight("light", new BABYLON.Vector3(0, 1, 0), scene);
-// Texture vidéo
-    /*<a href="https://fr.freepik.com/video-gratuite/animation-arriere-plan-merveilleux-chute-etoiles_3306016#fromView=search&page=1&position=4&uuid=9e1ae306-cbd4-4c63-b20b-78bc44c989f2">Vidéo de freepik</a>*/
-    const videoTexture = new BABYLON.VideoTexture(
-        "backgroundVideo",
-        ["assets/background/Stars.mp4"],
-        scene,
-        true,
-        true,
-        BABYLON.VideoTexture.TRILINEAR_SAMPLINGMODE,
-        { autoUpdateTexture: true }
-    );
-
-    const backgroundLayer = new BABYLON.Layer("backgroundLayer", null, scene);
-    backgroundLayer.texture = videoTexture;
-    backgroundLayer.isBackground = true; // Assure que ça reste derrière tout
-
-
+    addBackgroundVideo(scene);
     // GUI
     const gui = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
 
@@ -95,20 +79,30 @@ function createHomeGameScene(engine, canvas, setScene) {
     bottomPanel.paddingLeft = "400px";
     gui.addControl(bottomPanel);
 
+    const selectedMap = getSelectedMap();
+
     // Bouton Maps
-    const btnChooseMap = new BABYLON.GUI.Button("btnChooseMap");
+    const btnChooseMap = BABYLON.GUI.Button.CreateImageOnlyButton("btnChooseMap",selectedMap ? selectedMap.thumbnail : "green");
     btnChooseMap.width = "370px";
     btnChooseMap.height = "100px";
     btnChooseMap.color = "white";
-    btnChooseMap.background = "green";
+    btnChooseMap.background = selectedMap ? selectedMap.thumbnail : "green";
     btnChooseMap.cornerRadius = 10;
     btnChooseMap.thickness = 0;
 
     const txtMap = new BABYLON.GUI.TextBlock();
-    const selectedMap = getSelectedMap();
+
     txtMap.text = selectedMap ? selectedMap.name : "Maps";
     txtMap.color = "white";
     txtMap.fontSize = 24;
+
+    const textBackground = new BABYLON.GUI.Rectangle();
+    textBackground.height = "100%";
+    textBackground.width = "100%";
+    textBackground.background = "rgba(0, 0, 0, 0.3)";
+    textBackground.thickness = 0;
+
+    btnChooseMap.addControl(textBackground);
     btnChooseMap.addControl(txtMap);
     btnChooseMap.onPointerUpObservable.add(() => {
         const mapScene = createMapsScene(engine, canvas, setScene);
@@ -191,3 +185,19 @@ function createHomeGameScene(engine, canvas, setScene) {
 }
 
 
+function addBackgroundVideo(scene) {
+    /*"https://fr.freepik.com/video-gratuite/animation-arriere-plan-merveilleux-chute-etoiles_3306016#fromView=search&page=1&position=4&uuid=9e1ae306-cbd4-4c63-b20b-78bc44c989f2">Vidéo de freepik */
+    const videoTexture = new BABYLON.VideoTexture(
+        "backgroundVideo",
+        ["assets/background/Stars.mp4"],
+        scene,
+        true,
+        true,
+        BABYLON.VideoTexture.TRILINEAR_SAMPLINGMODE,
+        { autoUpdateTexture: true }
+    );
+
+    const backgroundLayer = new BABYLON.Layer("backgroundLayer", null, scene);
+    backgroundLayer.texture = videoTexture;
+    backgroundLayer.isBackground = true;
+}

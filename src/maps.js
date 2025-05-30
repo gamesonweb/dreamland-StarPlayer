@@ -6,7 +6,7 @@ function createMapsScene(engine, canvas, setScene) {
     camera.inputs.clear();
 
     new BABYLON.HemisphericLight("light", new BABYLON.Vector3(0, 1, 0), scene);
-
+    addBackgroundVideo(scene);
     // GUI
     const gui = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
 
