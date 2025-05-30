@@ -27,7 +27,7 @@ function createLoadingScreen(engine, canvas, onLoadingComplete) {
     // Création de la VideoTexture
     const videoTexture = new BABYLON.VideoTexture(
         "starsVideo",
-        ["./public/assets/background/Stars.mp4"],
+        ["assets/background/Stars.mp4"],
         scene,
         true,
         true,

@@ -189,7 +189,7 @@ function addBackgroundVideo(scene) {
     /*"https://fr.freepik.com/video-gratuite/animation-arriere-plan-merveilleux-chute-etoiles_3306016#fromView=search&page=1&position=4&uuid=9e1ae306-cbd4-4c63-b20b-78bc44c989f2">Vidéo de freepik */
     const videoTexture = new BABYLON.VideoTexture(
         "backgroundVideo",
-        ["./public/assets/background/Stars.mp4"],
+        ["assets/background/Stars.mp4"],
         scene,
         true,
         true,
