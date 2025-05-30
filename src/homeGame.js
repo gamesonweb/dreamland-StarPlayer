@@ -5,9 +5,24 @@ function createHomeGameScene(engine, canvas, setScene) {
     const camera = new BABYLON.ArcRotateCamera("camera", Math.PI / 2, Math.PI / 2.5, 10, BABYLON.Vector3.Zero(), scene);
     camera.attachControl(canvas, true);
     camera.inputs.clear();
-
     // Lumière
     new BABYLON.HemisphericLight("light", new BABYLON.Vector3(0, 1, 0), scene);
+// Texture vidéo
+    /*<a href="https://fr.freepik.com/video-gratuite/animation-arriere-plan-merveilleux-chute-etoiles_3306016#fromView=search&page=1&position=4&uuid=9e1ae306-cbd4-4c63-b20b-78bc44c989f2">Vidéo de freepik</a>*/
+    const videoTexture = new BABYLON.VideoTexture(
+        "backgroundVideo",
+        ["assets/background/Stars.mp4"],
+        scene,
+        true,
+        true,
+        BABYLON.VideoTexture.TRILINEAR_SAMPLINGMODE,
+        { autoUpdateTexture: true }
+    );
+
+    const backgroundLayer = new BABYLON.Layer("backgroundLayer", null, scene);
+    backgroundLayer.texture = videoTexture;
+    backgroundLayer.isBackground = true; // Assure que ça reste derrière tout
+
 
     // GUI
     const gui = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
@@ -125,6 +140,37 @@ function createHomeGameScene(engine, canvas, setScene) {
         setScene(gameScene);
     });
     bottomPanel.addControl(btnPlay);
+
+
+    // Bouton paramètres - en haut à droite
+    const btnSettings = new Button("btnSettings");
+    btnSettings.width = "50px";
+    btnSettings.height = "50px";
+    btnSettings.cornerRadius = 25;
+    btnSettings.color = "white";
+    btnSettings.background = "gray";
+    btnSettings.thickness = 0;
+    btnSettings.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_RIGHT;
+    btnSettings.verticalAlignment = Control.VERTICAL_ALIGNMENT_TOP;
+    btnSettings.paddingRight = "10px";
+    btnSettings.paddingTop = "10px";
+
+    const txtGear = new TextBlock();
+    txtGear.text = "⚙️";
+    txtGear.color = "white";
+    txtGear.fontSize = 24;
+    btnSettings.addControl(txtGear);
+
+    btnSettings.onPointerUpObservable.add(() => {
+        console.log("Ouvrir les paramètres");
+        scene.dispose();
+        const settingsScene = createSettingsScene(engine, canvas, setScene);
+        setScene(settingsScene);
+
+    });
+
+    gui.addControl(btnSettings);
+
 
     return scene;
 }
