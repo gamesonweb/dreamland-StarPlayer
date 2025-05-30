@@ -1,9 +1,18 @@
 async function havokPhysics(scene) {
-    const havok = await HavokPhysics({
-        locateFile: (file) => "./public/assets/HavokPhysics.wasm"
-    });
-    const hk = new BABYLON.HavokPlugin(true, havok);
-    scene.enablePhysics(new BABYLON.Vector3(0, -9.81, 0), hk);
+    let physicsPlugin;
+
+    try {
+        const havok = await HavokPhysics({
+            locateFile: () => "./assets/HavokPhysics.wasm"
+        });
+        physicsPlugin = new BABYLON.HavokPlugin(true, havok);
+    } catch (e) {
+        console.warn("Havok failed to load, falling back to AmmoJS.");
+        physicsPlugin = new BABYLON.AmmoJSPlugin();
+    }
+
+    scene.enablePhysics(new BABYLON.Vector3(0, -9.81, 0), physicsPlugin);
+
 }
 
 function createFreeCamera(scene, canvas) {

@@ -179,7 +179,7 @@ function getCharacters(){
             name: "Wendy",
             modelPath: "./public/models/personnages/",
             modelFile: "wendy.glb",
-            thumbnail: "./public/thumbnails/grass.jpg",
+            thumbnail: "./public/thumbnails/Wendy.png",
             weaponType: "gun",
             maxHP: 7000
         },

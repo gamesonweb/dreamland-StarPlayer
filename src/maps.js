@@ -131,7 +131,7 @@ function getMaps() {
     return [
         {
             name: "Hors Jeu 1",
-            thumbnail: "./public/thumbnails/HorsJeu1.jpg",
+            thumbnail: "./public/thumbnails/HorsJeu1.png",
             sceneBuilder: createHorsJeu1Scene
         },
         {
