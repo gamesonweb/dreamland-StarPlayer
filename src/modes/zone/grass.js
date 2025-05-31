@@ -1,5 +1,9 @@
+import { FireGun } from "../../weapon";
+
 async function createGrassScene(engine, canvas, setScene) {
     const scene = new BABYLON.Scene(engine);
+
+    const gui = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
 
     createFreeCamera(scene, canvas);
     await havokPhysics(scene);
@@ -20,8 +24,8 @@ async function createGrassScene(engine, canvas, setScene) {
     let lastShotTime = 0;
     let autoReloading = false;
     let reloadIntervalId = null;
-
-
+    
+    
     function startAutoReload() {
         if (autoReloading) return;
         autoReloading = true;
@@ -42,15 +46,15 @@ async function createGrassScene(engine, canvas, setScene) {
 
     scene.shoot = () => {
         if (!currentCharacter || !currentWeapon) return;
-
+    
         const now = Date.now();
         const cooldown = 500;
-
+    
         if (now - lastShotTime < cooldown) return;
-
+    
         if (currentShots >= 1) {
             const numProjectiles = currentCharacter.NumberAmmoPerShoot;
-
+    
             for (let i = 0; i < numProjectiles; i++) {
                 setTimeout(() => {
                     const projectile = currentWeapon.fire(inputStates);
@@ -59,46 +63,34 @@ async function createGrassScene(engine, canvas, setScene) {
                     }
                 }, i * 50);
             }
-
+    
             currentShots -= 1;
             updateAmmoBar();
             lastShotTime = now;
         }
     };
-
-
-
+    
+    
+    
 
     const character = getSelectedCharacter();
     currentCharacter = character;
 
     const projectiles = [];
-    // Initialisation des équipes
-    const teams = {
-        red: [],
-        blue: []
-    };
+    const teams = { red: [], blue: [] };
 
-    // Crée la zone de capture
     const zoneController = setupZoneControl(scene, teams);
     createGameTimerUI(scene, zoneController);
 
-    // Création d'AssetsManager
     const assetsManager = new BABYLON.AssetsManager(scene);
 
-    // Tâche pour charger la map
-    const mapTask = assetsManager.addMeshTask("map task", "", "./public/models/map/", "Dueling-Beetles.glb");
+    const mapTask = assetsManager.addMeshTask("map task", "", "models/map/", "Dueling-Beetles.glb");
     mapTask.onSuccess = (task) => {
         task.loadedMeshes.forEach(mesh => {
             if (mesh.getTotalVertices() > 0) {
-                console.log("Map Mesh:", mesh.name);
                 if (mesh.name === "Sol" || mesh.name.startsWith("Brique_") || mesh.name.startsWith("Beton_")) {
                     mesh.checkCollisions = true;
-                    const body = new BABYLON.PhysicsBody(mesh, BABYLON.PhysicsMotionType.STATIC, false, scene);
-                    body.shape = new BABYLON.PhysicsShapeMesh(mesh, scene);
-                    body.setMassProperties({ mass: 0 });
-
-                    //new BABYLON.PhysicsAggregate(mesh, BABYLON.PhysicsShapeType.MESH, { mass: 0, restitution: 0.3 }, scene);
+                    new BABYLON.PhysicsAggregate(mesh, BABYLON.PhysicsShapeType.MESH, { mass: 0, restitution: 0.3 }, scene);
                 }
             }
         });
@@ -119,11 +111,15 @@ async function createGrassScene(engine, canvas, setScene) {
             playerMesh.Hp = character.maxHP;
             playerMesh.maxHp = character.maxHP;
 
-            playerMesh.hpGui = createHPBar(scene, playerMesh);
+
+
+            playerMesh.hpGui = createHPBar(scene, { mesh: playerMesh }, gui);
             playerMesh.updateHpBar = updateHpBar.bind(playerMesh);
 
             playerMesh.ammoBar = createAmmoBar(scene, { mesh: playerMesh }, gui);
             playerMesh.ammoBar.update(currentShots, maxShots);
+
+            
 
             const gunMesh = task.loadedMeshes.find(m => m.name.includes("Gun")) || task.loadedMeshes[0];
 
@@ -143,7 +139,6 @@ async function createGrassScene(engine, canvas, setScene) {
 
             teams.blue.push(playerMesh);
 
-            // Clones bleus (2)
             for (let i = 0; i < 2; i++) {
                 const clone = playerMesh.clone(`blueClone${i}`);
                 clone.position = playerMesh.position.add(new BABYLON.Vector3(i + 1, 0, 0));
@@ -153,7 +148,11 @@ async function createGrassScene(engine, canvas, setScene) {
                 clone.updateHpBar = updateHpBar.bind(clone);
             }
 
-            // Clones rouges (3)
+            teams.red.forEach(clone => {
+                new BABYLON.PhysicsAggregate(clone, BABYLON.PhysicsShapeType.BOX, { mass: 0 }, scene);
+            });
+            
+
             for (let i = 0; i < 3; i++) {
                 const clone = playerMesh.clone(`redClone${i}`);
                 clone.position = playerMesh.position.add(new BABYLON.Vector3(-i - 1, 0, -40));
@@ -168,7 +167,6 @@ async function createGrassScene(engine, canvas, setScene) {
     assetsManager.load();
     const progressBars = createProgressBars(scene);
 
-    // Mise à jour chaque frame
     scene.onBeforeRenderObservable.add(() => {
         if (!playerMesh) return;
 
@@ -201,10 +199,6 @@ async function createGrassScene(engine, canvas, setScene) {
             inputStates.space = false;
         }
 
-        if (weapon) {
-            weapon.fire(inputStates);
-        }
-
         if (playerAnimations && playerAnimations.length > 0) {
             const walkAnim = playerAnimations.find(anim =>
                 anim.name.toLowerCase().includes("walk") || anim.name.toLowerCase().includes("run"));
@@ -227,3 +221,5 @@ function updateHpBar() {
     this.hpGui.hpFloatingText.text = this.Hp.toString();
     this.hpGui.hpBarFill.background = ratio <= 0.3 ? "red" : "green";
 }
+
+export { createGrassScene };
