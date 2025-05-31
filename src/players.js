@@ -1,3 +1,6 @@
+import { FireGun, Sword } from "./weapon";
+import {createHomeGameScene} from "./homeGame";
+
 function createPlayersScene(engine, canvas, setScene) {
     const scene = new BABYLON.Scene(engine);
 
@@ -84,7 +87,7 @@ function createPlayersScene(engine, canvas, setScene) {
         if (activeMesh) activeMesh.rotation.y += 0.1;
     });
 
-// Bouton flèche droite
+    // Bouton flèche droite
     const rightArrow = BABYLON.GUI.Button.CreateSimpleButton("right", "→");
     rightArrow.width = "60px";
     rightArrow.height = "60px";
@@ -161,8 +164,11 @@ function createPlayersScene(engine, canvas, setScene) {
                 if (activeMesh) activeMesh.setEnabled(false);
                 activeMesh = characterMeshes[char.name];
                 if (activeMesh) activeMesh.setEnabled(true);
+            
                 setSelectedCharacter(char);
             });
+            
+            
 
             leftPanel.addControl(button);
         });
@@ -181,15 +187,19 @@ function getCharacters(){
             modelFile: "perso1.glb",
             thumbnail: "./thumbnails/grass.jpg",
             weaponType: "gun",
-            maxHP: 7000
+            maxHP: 7000,
+            NumberAmmoPerShoot: 1,
+            reloadTime: 3000
         },
         {
             name: "Colt",
             modelPath: "./models/personnages/",
             modelFile: "colt_player_geo.glb",
             thumbnail: "./thumbnails/Colt.png",
-            weaponType: "bow",
-            maxHP: 5000
+            weaponType: "gun",
+            maxHP: 5000,
+            NumberAmmoPerShoot: 6,
+            reloadTime: 3000
         },
         {
             name: "Piper",
@@ -197,7 +207,9 @@ function getCharacters(){
             modelFile: "mariposa_piper.glb",
             thumbnail: "./thumbnails/Piper.png",
             weaponType: "staff",
-            maxHP: 3500
+            maxHP: 3500,
+            NumberAmmoPerShoot: 1,
+            reloadTime: 2500
         },
         {
             name: "Nita",
@@ -205,7 +217,11 @@ function getCharacters(){
             modelFile: "runner_nita.glb",
             thumbnail: "./thumbnails/Nita.png",
             weaponType: "shield",
-            maxHP: 4000
+            maxHP: 4000,
+            NumberAmmoPerShoot: 1,
+            reloadTime: 2000
         }
     ];
 }
+
+export { createPlayersScene };

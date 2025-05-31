@@ -1,3 +1,6 @@
+import {createHomeGameScene} from "./homeGame";
+import {createGrassScene} from "./modes/zone/grass";
+
 function createMapsScene(engine, canvas, setScene) {
     const scene = new BABYLON.Scene(engine);
 
@@ -153,3 +156,5 @@ function getMaps() {
         }
     ];
 }
+
+export { createMapsScene };

@@ -1,5 +1,7 @@
 import { Color3, MeshBuilder, PhysicsAggregate, PhysicsShapeType, StandardMaterial, Vector3 } from "@babylonjs/core";
 
+console.log("weapon.js bien chargé");
+
 class Weapon {
     constructor(gunMesh, heroMesh, scene) {
         this.gunMesh = gunMesh;
@@ -16,27 +18,51 @@ class Weapon {
 
 // Arme pistolet héritant de Weapon
 export class FireGun extends Weapon {
-    fire(inputStates) {
-        if (!inputStates.keyF || !this.gunMesh || !this.canFire) return;
-
-        this.canFire = false;
-        setTimeout(() => this.canFire = true, 300); // cooldown 300ms
-
-        const bullet = MeshBuilder.CreateSphere("bullet", {diameter: 0.3}, this.scene);
+    fire(ignoreCooldown = false) {
+        console.log("FireGun.fire() called");
+        if (!this.gunMesh || (!this.canFire && !ignoreCooldown)) return;
+    
+        if (!ignoreCooldown) {
+            this.canFire = false;
+            setTimeout(() => this.canFire = true, 300);
+        }
+    
+        this.gunMesh.computeWorldMatrix(true);
+        const gunPos = this.gunMesh.getAbsolutePosition().clone();
+    
+        const bullet = MeshBuilder.CreateSphere("bullet", { diameter: 0.3 }, this.scene);
         bullet.material = new StandardMaterial("bulletMat", this.scene);
-        bullet.material.diffuseColor = new Color3(1, 1, 0); // jaune
-
-        bullet.position = this.gunMesh.getAbsolutePosition().add(new Vector3(0, 0.2, 0));
-
-        const direction = this.gunMesh.forward || this.heroMesh.forward || new Vector3(0, 0, 1);
-
-        const bulletAgg = new PhysicsAggregate(bullet, PhysicsShapeType.SPHERE, {mass: 0.2}, this.scene);
+        bullet.material.diffuseColor = new Color3(1, 1, 0);
+    
+        bullet.position = gunPos.add(new Vector3(0, 0.2, 0));
+    
+        const direction = this.gunMesh.getDirection(new Vector3(0, 0, 1));
+        console.log("Bullet direction:", direction);
+    
+        // Création physique (identique au reste de ta scène)
+        const bulletAgg = new PhysicsAggregate(bullet, PhysicsShapeType.SPHERE, { mass: 0.2 }, this.scene);
+        
+        // Impulsion pour propulser la balle
         const impulse = direction.scale(50);
         bulletAgg.body.applyImpulse(impulse, bullet.getAbsolutePosition());
-
-        setTimeout(() => bullet.dispose(), 3000);
+    
+        // Gestion collision avec HavokPhysics
+        if (bulletAgg.body.onCollision) {
+            bulletAgg.body.onCollision = (otherBody) => {
+                console.log("Collision détectée avec :", otherBody.object ? otherBody.object.name : "un objet"); // <-- Log collision
+                if (!bullet.isDisposed()) {
+                    bullet.dispose();
+                }
+            };
+        } else {
+            // Si pas d'événement collision, suppression automatique après 3s
+            setTimeout(() => {
+                if (!bullet.isDisposed()) bullet.dispose();
+            }, 3000);
+        }
     }
 }
+
 
 export class Sword extends Weapon {
     fire(inputStates) {
@@ -51,6 +77,7 @@ export class Sword extends Weapon {
 
         swordSwing.position = this.gunMesh.getAbsolutePosition().add(new Vector3(0, 0.2, 0));
 
+
         const direction = this.gunMesh.forward || this.heroMesh.forward || new Vector3(0, 0, 1);
 
         const swordAgg = new PhysicsAggregate(swordSwing, PhysicsShapeType.BOX, {mass: 1}, this.scene);
@@ -59,7 +86,5 @@ export class Sword extends Weapon {
 
         setTimeout(() => swordSwing.dispose(), 1000);
 }
-
-
-
 }
+

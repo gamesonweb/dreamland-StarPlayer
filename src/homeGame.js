@@ -1,3 +1,6 @@
+import { createPlayersScene } from "./players";
+import { createMapsScene } from "./maps";
+
 function createHomeGameScene(engine, canvas, setScene) {
     let scene = new BABYLON.Scene(engine);
 
@@ -130,3 +133,4 @@ function createHomeGameScene(engine, canvas, setScene) {
 }
 
 
+export { createHomeGameScene };
