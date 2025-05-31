@@ -9,7 +9,7 @@ function createMapsScene(engine, canvas, setScene) {
     camera.inputs.clear();
 
     new BABYLON.HemisphericLight("light", new BABYLON.Vector3(0, 1, 0), scene);
-
+    addBackgroundVideo(scene);
     // GUI
     const gui = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
 
@@ -133,15 +133,16 @@ function createMapsScene(engine, canvas, setScene) {
 function getMaps() {
     return [
         {
-            name: "Plaine",
-            thumbnail: "./thumbnails/grass.jpg",
-            sceneBuilder: createGrassScene
-        },
-        {
             name: "Hors Jeu 1",
-            thumbnail: "./thumbnails/horsJeu1.jpg",
+            thumbnail: "./thumbnails/HorsJeu1.jpg",
             sceneBuilder: createHorsJeu1Scene
         },
+        {
+            name: "HorsJeu2",
+            thumbnail: "./thumbnails/HorsJeu2.png",
+            sceneBuilder: createGrassScene
+        },
+
         {
             name: "Neige",
             thumbnail: "./thumbnails/snow.jpg"
@@ -150,10 +151,6 @@ function getMaps() {
             name: "Lave",
             thumbnail: "./thumbnails/lava.jpg"
         },
-        {
-            name: "Ville",
-            thumbnail: "./thumbnails/city.jpg"
-        }
     ];
 }
 

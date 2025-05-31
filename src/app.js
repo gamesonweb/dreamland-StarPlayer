@@ -6,20 +6,30 @@ class App {
         this.canvas.style.height = "100%";
         this.canvas.id = "gameCanvas";
         document.body.appendChild(this.canvas);
+
         this.engine = new BABYLON.Engine(this.canvas, true);
         this.scene = null;
 
-        createLoadingScreen(this.engine, this.canvas, () => {
-            this.setScene(createHomeGameScene(this.engine, this.canvas, this.setScene.bind(this)));
+        // Désactiver l'UI de chargement Babylon par défaut
+        this.engine.loadingScreen.displayLoadingUI = function () {};
+        this.engine.loadingScreen.hideLoadingUI = function () {};
 
-            this.engine.runRenderLoop(() => {
-                if (this.scene && typeof this.scene.render=== "function")
-                    this.scene.render();
-            });
+        // Commencer le renderLoop IMMÉDIATEMENT
+        this.engine.runRenderLoop(() => {
+            if (this.scene && typeof this.scene.render === "function") {
+                this.scene.render();
+            }
         });
+
         window.addEventListener("resize", () => {
             this.engine.resize();
         });
+
+        // Lancer la scène de chargement
+        this.setScene(createLoadingScreen(this.engine, this.canvas, () => {
+            // Quand le chargement est terminé
+            this.setScene(createHomeGameScene(this.engine, this.canvas, this.setScene.bind(this)));
+        }));
     }
 
     setScene(newScene) {
@@ -28,6 +38,6 @@ class App {
         }
         this.scene = newScene;
     }
-
 }
+
 new App();

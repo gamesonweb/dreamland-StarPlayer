@@ -15,7 +15,7 @@ function createPlayersScene(engine, canvas, setScene) {
 
     // Light
     new BABYLON.HemisphericLight("light", new BABYLON.Vector3(0, 1, 0), scene);
-
+    addBackgroundVideo(scene);
     // GUI
     const gui = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
 
@@ -182,9 +182,9 @@ function createPlayersScene(engine, canvas, setScene) {
 function getCharacters(){
     return [
         {
-            name: "La mariée en bleuuuu",
+            name: "Wendy",
             modelPath: "./models/personnages/",
-            modelFile: "perso1.glb",
+            modelFile: "wendy.glb",
             thumbnail: "./thumbnails/grass.jpg",
             weaponType: "gun",
             maxHP: 7000,
