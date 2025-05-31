@@ -12,12 +12,12 @@ async function createHorsJeu1Scene(engine, canvas, setScene) {
     await createGround(scene);
     scene.tank = await createTank(scene, character);
     createHeroDude(scene, character.modelFile);
-
-
-    // Ajoute ça pour animer ton tank
+    //createEnemyCannonball(scene.tank, scene.tank);
     scene.onBeforeRenderObservable.add(() => {
         if (scene.tank && !scene.tank.isDead) {
             scene.tank.move();
+
+            //moveOtherDudes(scene.tank);
         }
     });
     // Initialisation des équipes
@@ -45,9 +45,15 @@ function createGround(scene) {
                 } else {
                     mesh.checkCollisions = true;
                     mesh.isPickable = true;
-                    const shape = new BABYLON.PhysicsShapeMesh(mesh, scene);
+                    mesh.physicsImpostor = new BABYLON.PhysicsImpostor(
+                        mesh,
+                        BABYLON.PhysicsImpostor.BoxImpostor,
+                        { mass: 0 },
+                        scene
+                    );
+                    /*const shape = new BABYLON.PhysicsShapeMesh(mesh, scene);
                     const body = new BABYLON.PhysicsBody(mesh, BABYLON.PhysicsMotionType.STATIC, false, scene);
-                    body.shape = shape;
+                    body.shape = shape;*/
                 }
             });
 
@@ -96,6 +102,7 @@ function createGround(scene) {
     }
 
 function createTank(scene, character ) {
+    const gui = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("tankUI");
     return new Promise((resolve, reject) => {
         const assetsManager = new BABYLON.AssetsManager(scene);
         const tankTask = assetsManager.addMeshTask("character task", "", character.modelPath, character.modelFile);
@@ -184,7 +191,7 @@ function createTank(scene, character ) {
 
             };
 
-            tank.hpGui = createHPBar(scene, tank);
+            tank.hpGui = createHPBar(scene, tank, gui);
 
             tank.updateHpBar = function () {
                 const ratio = Math.max(this.hp / this.hpMax, 0);
@@ -257,6 +264,7 @@ function createTank(scene, character ) {
 
 
 function createHeroDude(scene, characterName) {
+    const gui = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("heroDudeUI");
     BABYLON.SceneLoader.ImportMesh("", "models/personnages/", characterName , scene, (meshes) => {
         let original = meshes[0]; // Racine importée
 
@@ -285,7 +293,7 @@ function createHeroDude(scene, characterName) {
             clone.hpMax = 5600;
             clone.hp = 5600;
 
-            clone.hpGui = createHPBar(scene, clone);
+            clone.hpGui = createHPBar(scene, clone,gui);
 
             clone.updateHpBar = function () {
                 const ratio = Math.max(this.hp / this.hpMax, 0);
@@ -376,13 +384,13 @@ function createHeroDude(scene, characterName) {
     });
 }
 
-function moveOtherDudes(tank) {
-    if (scene.dudes) {
-        for (let i = 0; i < scene.dudes.length; i++) {
-            const dude = scene.dudes[i];
-            dude.move(tank);
-            dude.fire(tank);
-        }
+function moveOtherDudes(target) {
+    if (!target || !target.position) return;
+    if (!target.getScene().dudes) return;
+
+    for (let dude of target.getScene().dudes) {
+        dude.move(target);
+        dude.fire(target);
     }
 }
 

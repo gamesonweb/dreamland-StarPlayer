@@ -26,8 +26,8 @@ function createFollowCamera(scene, target) {
     // Caméra suiveuse
     let followCamera = new BABYLON.FollowCamera("followCamera", new BABYLON.Vector3(0, 10, -10), scene);
     followCamera.lockedTarget = target;
-    followCamera.radius = 10;
-    followCamera.heightOffset = 40;
+    followCamera.radius = 8;
+    followCamera.heightOffset = 35;
     followCamera.rotationOffset = 180;
     followCamera.inputs.clear();
 
@@ -91,6 +91,19 @@ function setupInput(scene) {
                 inputStates.keyF = pressed;
                 break;
         }
+
+        if (gameOver || !playerAlive) {
+            // Désactive les contrôles si le jeu est terminé ou si le joueur est mort
+            inputStates = {
+                up: false,
+                down: false,
+                left: false,
+                right: false,
+                space: false,
+                keyF: false,
+            };
+        }
+
     });
 }
 
@@ -131,7 +144,7 @@ function createHPBar(scene, character, gui) {
     hpFloatingText.fontSize = 16;
     gui.addControl(hpFloatingText);
     hpFloatingText.linkWithMesh(character.mesh);
-    hpFloatingText.linkOffsetY = -70;
+    hpFloatingText.linkOffsetY = -80;
 
     return {
         hpBarContainer,
