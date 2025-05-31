@@ -13,7 +13,7 @@ class Weapon {
 }
 
 // Arme pistolet héritant de Weapon
-export class FireGun extends Weapon {
+class FireGun extends Weapon {
     fire(ignoreCooldown = false) {
         console.log("FireGun.fire() called");
         if (!this.gunMesh || (!this.canFire && !ignoreCooldown)) return;
