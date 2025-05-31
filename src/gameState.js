@@ -15,22 +15,6 @@ async function havokPhysics(scene) {
     scene.enablePhysics(new BABYLON.Vector3(0, -9.81, 0), physicsPlugin);
 }
 
-/*async function havokPhysics(scene) {
-    let physicsPlugin;
-
-    try {
-        const havok = await HavokPhysics({
-            locateFile: () => "./assets/HavokPhysics.wasm"
-        });
-        physicsPlugin = new BABYLON.HavokPlugin(true, havok);
-    } catch (e) {
-        console.warn("Havok failed to load, falling back to AmmoJS.");
-        const ammo = await Ammo();
-        physicsPlugin = new BABYLON.AmmoJSPlugin(true, ammo);
-    }
-
-    scene.enablePhysics(new BABYLON.Vector3(0, -9.81, 0), physicsPlugin);
-}*/
 function createFreeCamera(scene, canvas) {
     let camera = new BABYLON.FreeCamera("freeCamera", new BABYLON.Vector3(0, 10, 0), scene);
     camera.attachControl(canvas, true);
@@ -136,17 +120,18 @@ function createHPBar(scene, character, gui) {
     hpBarFill.height = "100%";
     hpBarFill.background = "green";
     hpBarFill.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_LEFT;
+    hpBarContainer.addControl(hpBarFill);
+
     hpBarContainer.linkWithMesh(character.mesh);
     hpBarContainer.linkOffsetY = -50;
-    hpBarContainer.addControl(hpBarFill);
 
     // Texte flottant des HP au-dessus du dude
     const hpFloatingText = new BABYLON.GUI.TextBlock();
     hpFloatingText.color = "white";
     hpFloatingText.fontSize = 16;
+    gui.addControl(hpFloatingText);
     hpFloatingText.linkWithMesh(character.mesh);
     hpFloatingText.linkOffsetY = -70;
-    gui.addControl(hpFloatingText);
 
     return {
         hpBarContainer,
