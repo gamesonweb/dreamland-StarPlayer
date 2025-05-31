@@ -36,7 +36,11 @@ async function createGrassScene(engine, canvas, setScene) {
                 console.log("Map Mesh:", mesh.name);
                 if (mesh.name === "Sol" || mesh.name.startsWith("Brique_") || mesh.name.startsWith("Beton_")) {
                     mesh.checkCollisions = true;
-                    new BABYLON.PhysicsAggregate(mesh, BABYLON.PhysicsShapeType.MESH, { mass: 0, restitution: 0.3 }, scene);
+                    const body = new BABYLON.PhysicsBody(mesh, BABYLON.PhysicsMotionType.STATIC, false, scene);
+                    body.shape = new BABYLON.PhysicsShapeMesh(mesh, scene);
+                    body.setMassProperties({ mass: 0 });
+
+                    //new BABYLON.PhysicsAggregate(mesh, BABYLON.PhysicsShapeType.MESH, { mass: 0, restitution: 0.3 }, scene);
                 }
             }
         });
