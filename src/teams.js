@@ -135,7 +135,6 @@ function handleDeath(mesh, scene, teams) {
         if (mesh.isPlayer) {
             playerAlive = true;
 
-            // 👇 Ajoute ça :
             if (mesh.camera) {
                 scene.activeCamera = mesh.camera;
                 mesh.camera.attachControl(scene.getEngine().getRenderingCanvas(), true);
