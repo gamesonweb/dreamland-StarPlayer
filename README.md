@@ -1,4 +1,4 @@
-# StarPlayer - Jeu 3D multijoueur inspiré de Brawl Stars
+# StarPlayer - Jeu 3D inspiré de Brawl Stars
 
 ## Equipe :
 VARELA TAVARES Catia M1 MIAGE
@@ -8,7 +8,7 @@ Hébergé ici : (https://gamesonweb.github.io/dreamland-StarPlayer/)
 
 ## Description :
 
-StarPlayer est un jeu multijoueur en 3D développé avec Babylon.js. Le joueur contrôle un personnage dans une arène et affronte d'autres joueurs en mode Zone réservée. Le jeu propose une sélection de personnages, des cartes variées, et des clones bots.
+StarPlayer est un jeu en 3D développé avec Babylon.js, insîré de BrawlStars. Le joueur contrôle un personnage dans une arène et affronte d'autres joueurs en mode Zone réservée. Le jeu propose une sélection de personnages, des cartes variées, et des clones bots.
 
 ## Fonctionnalités principales
 
