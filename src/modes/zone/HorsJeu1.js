@@ -6,7 +6,6 @@ async function createHorsJeu1Scene(engine, canvas, setScene) {
     new BABYLON.HemisphericLight("light", new BABYLON.Vector3(0, 1, 0), scene);
 
     setupInput(scene);
-    createGround(scene);
 
     character = getSelectedCharacter();
 

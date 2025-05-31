@@ -15,6 +15,7 @@ async function havokPhysics(scene) {
     scene.enablePhysics(new BABYLON.Vector3(0, -9.81, 0), physicsPlugin);
 }
 
+
 function createFreeCamera(scene, canvas) {
     let camera = new BABYLON.FreeCamera("freeCamera", new BABYLON.Vector3(0, 10, 0), scene);
     camera.attachControl(canvas, true);
