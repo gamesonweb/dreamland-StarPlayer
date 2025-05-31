@@ -68,7 +68,7 @@ function fireProjectile(origin, direction, scene, team, projectiles, teams) {
 
             const distance = BABYLON.Vector3.Distance(projectile.position, enemy.position);
             if (distance < 1.5) {
-                dealDamage(enemy, 1000, scene, teams); // 👈 passe teams ici
+                dealDamage(enemy, 1000, scene, teams);
                 projectile.dispose();
                 clearInterval(checkHitInterval);
                 return;
@@ -109,7 +109,7 @@ function handleDeath(mesh, scene, teams) {
 
     if (mesh.isPlayer) {
         playerAlive = false;
-        enterSpectatorMode(scene, mesh.team, teams); // 👈 passe teams ici
+        enterSpectatorMode(scene, mesh.team, teams);
     }
 
     showDeathMessage(mesh, scene, 10);
