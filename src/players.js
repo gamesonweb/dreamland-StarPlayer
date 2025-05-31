@@ -181,7 +181,9 @@ function getCharacters(){
             modelFile: "wendy.glb",
             thumbnail: "./public/thumbnails/Wendy.png",
             weaponType: "gun",
-            maxHP: 7000
+            maxHP: 7000,
+            NumberAmmoPerShoot: 1,
+            reloadTime: 3000
         },
         {
             name: "Colt",
@@ -189,7 +191,9 @@ function getCharacters(){
             modelFile: "colt_player_geo.glb",
             thumbnail: "./public/thumbnails/Colt.png",
             weaponType: "guns",
-            maxHP: 5000
+            maxHP: 5000,
+            NumberAmmoPerShoot: 6,
+            reloadTime: 3000
         },
         {
             name: "Piper",
@@ -197,7 +201,9 @@ function getCharacters(){
             modelFile: "mariposa_piper.glb",
             thumbnail: "./public/thumbnails/Piper.png",
             weaponType: "umbrella",
-            maxHP: 3500
+            maxHP: 3500,
+            NumberAmmoPerShoot: 1,
+            reloadTime: 2500
         },
         {
             name: "Nita",
@@ -205,7 +211,9 @@ function getCharacters(){
             modelFile: "runner_nita.glb",
             thumbnail: "./public/thumbnails/Nita.png",
             weaponType: "shield",
-            maxHP: 4000
+            maxHP: 4000,
+            NumberAmmoPerShoot: 1,
+            reloadTime: 2000
         }
     ];
 }

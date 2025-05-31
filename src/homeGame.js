@@ -5,6 +5,7 @@ function createHomeGameScene(engine, canvas, setScene) {
     const camera = new BABYLON.ArcRotateCamera("camera", Math.PI / 2, Math.PI / 2.5, 10, BABYLON.Vector3.Zero(), scene);
     camera.attachControl(canvas, true);
     camera.inputs.clear();
+
     // Lumière
     new BABYLON.HemisphericLight("light", new BABYLON.Vector3(0, 1, 0), scene);
     addBackgroundVideo(scene);

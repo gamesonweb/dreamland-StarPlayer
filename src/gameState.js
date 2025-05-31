@@ -109,6 +109,7 @@ function setupInput(scene) {
         }
     });
 }
+
 function normalizeMeshHeight(mesh, targetHeight = 2) {
     const boundingInfo = mesh.getHierarchyBoundingVectors();
     const size = boundingInfo.max.subtract(boundingInfo.min);
@@ -117,8 +118,8 @@ function normalizeMeshHeight(mesh, targetHeight = 2) {
     mesh.scaling = new BABYLON.Vector3(scaleFactor, scaleFactor, scaleFactor);
 }
 
-function createHPBar(scene, character) {
-    const gui = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
+function createHPBar(scene, character, gui) {
+
     // Conteneur de la barre de vie
     const hpBarContainer = new BABYLON.GUI.Rectangle();
     hpBarContainer.width = "50px";
@@ -136,7 +137,7 @@ function createHPBar(scene, character) {
     hpBarFill.background = "green";
     hpBarFill.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_LEFT;
     hpBarContainer.linkWithMesh(character.mesh);
-    hpBarContainer.linkOffsetY = -60;
+    hpBarContainer.linkOffsetY = -50;
     hpBarContainer.addControl(hpBarFill);
 
     // Texte flottant des HP au-dessus du dude
@@ -144,7 +145,7 @@ function createHPBar(scene, character) {
     hpFloatingText.color = "white";
     hpFloatingText.fontSize = 16;
     hpFloatingText.linkWithMesh(character.mesh);
-    hpFloatingText.linkOffsetY = -80;
+    hpFloatingText.linkOffsetY = -70;
     gui.addControl(hpFloatingText);
 
     return {
@@ -153,6 +154,42 @@ function createHPBar(scene, character) {
         hpFloatingText,
     };
 }
+
+function createAmmoBar(scene, character, gui) {
+
+    // Conteneur de la barre de munitions
+    const ammoBarContainer = new BABYLON.GUI.Rectangle();
+    ammoBarContainer.width = "50px";
+    ammoBarContainer.height = "8px";
+    ammoBarContainer.cornerRadius = 4;
+    ammoBarContainer.color = "white";
+    ammoBarContainer.thickness = 1;
+    ammoBarContainer.background = "grey";
+    gui.addControl(ammoBarContainer);
+
+    // Barre de remplissage
+    const ammoBarFill = new BABYLON.GUI.Rectangle();
+    ammoBarFill.width = 5;
+    ammoBarFill.height = "100%";
+    ammoBarFill.background = "orange";
+    ammoBarFill.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_LEFT;
+    ammoBarContainer.addControl(ammoBarFill);
+
+    // Position sous la barre de vie
+    ammoBarContainer.linkWithMesh(character.mesh);
+    ammoBarContainer.linkOffsetY = -40; // Ajuste selon besoin
+
+    return {
+        ammoBarContainer,
+        ammoBarFill,
+        update: (current, max) => {
+            ammoBarFill.width = Math.max(current / max, 0);
+        }
+    };
+}
+
+
+
 
 function showEndGameScreen(scene, winnerTeamName, onReplay, onHome) {
     const ui = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI-End");

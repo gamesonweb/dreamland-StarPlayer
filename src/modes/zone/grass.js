@@ -12,9 +12,67 @@ async function createGrassScene(engine, canvas, setScene) {
     let playerAnimations = null;
     let weapon = null;
 
-    const character = getSelectedCharacter();
-    const projectiles = [];
+    // Variables liées au tir et munitions
+    let currentCharacter = null;
+    let currentWeapon = null;
+    let maxShots = 3;
+    let currentShots = maxShots;
+    let lastShotTime = 0;
+    let autoReloading = false;
+    let reloadIntervalId = null;
 
+
+    function startAutoReload() {
+        if (autoReloading) return;
+        autoReloading = true;
+
+        reloadIntervalId = setInterval(() => {
+            if (currentShots < maxShots) {
+                currentShots++;
+                updateAmmoBar();
+            }
+        }, 2000);
+    }
+
+    function updateAmmoBar() {
+        if (playerMesh && playerMesh.ammoBar) {
+            playerMesh.ammoBar.update(currentShots, maxShots);
+        }
+    }
+
+    scene.shoot = () => {
+        if (!currentCharacter || !currentWeapon) return;
+
+        const now = Date.now();
+        const cooldown = 500;
+
+        if (now - lastShotTime < cooldown) return;
+
+        if (currentShots >= 1) {
+            const numProjectiles = currentCharacter.NumberAmmoPerShoot;
+
+            for (let i = 0; i < numProjectiles; i++) {
+                setTimeout(() => {
+                    const projectile = currentWeapon.fire(inputStates);
+                    if (projectile) {
+                        projectiles.push(projectile); // ✅ on stocke le projectile
+                    }
+                }, i * 50);
+            }
+
+            currentShots -= 1;
+            updateAmmoBar();
+            lastShotTime = now;
+        }
+    };
+
+
+
+
+    const character = getSelectedCharacter();
+    currentCharacter = character;
+
+    const projectiles = [];
     // Initialisation des équipes
     const teams = {
         red: [],
@@ -46,17 +104,14 @@ async function createGrassScene(engine, canvas, setScene) {
         });
     };
 
-    // Tâche pour charger le personnage
-    let characterTask;
     if (character) {
-        characterTask = assetsManager.addMeshTask("character task", "", character.modelPath, character.modelFile);
+        const characterTask = assetsManager.addMeshTask("character task", "", character.modelPath, character.modelFile);
         characterTask.onSuccess = (task) => {
             playerMesh = task.loadedMeshes[0];
             playerMesh.name = "PlayerMesh";
             playerMesh.checkCollisions = true;
             playerMesh.position = new BABYLON.Vector3(0, 0, 32);
             normalizeMeshHeight(playerMesh, 2);
-
             playerAnimations = task.loadedAnimationGroups;
 
             scene.activeCamera = createFollowCamera(scene, playerMesh);
@@ -67,16 +122,24 @@ async function createGrassScene(engine, canvas, setScene) {
             playerMesh.hpGui = createHPBar(scene, playerMesh);
             playerMesh.updateHpBar = updateHpBar.bind(playerMesh);
 
+            playerMesh.ammoBar = createAmmoBar(scene, { mesh: playerMesh }, gui);
+            playerMesh.ammoBar.update(currentShots, maxShots);
+
+            const gunMesh = task.loadedMeshes.find(m => m.name.includes("Gun")) || task.loadedMeshes[0];
+
             switch (character.weaponType) {
                 case "gun":
-                    weapon = new FireGun(task.loadedMeshes.find(m => m.name.includes("Gun")), playerMesh, scene);
+                    currentWeapon = new FireGun(gunMesh, playerMesh, scene);
                     break;
                 case "sword":
-                    weapon = new Sword(playerMesh, scene);
+                    currentWeapon = new Sword(playerMesh, scene);
                     break;
                 default:
                     console.warn("Type d'arme inconnu :", character.weaponType);
             }
+
+            startAutoReload();
+            updateAmmoBar();
 
             teams.blue.push(playerMesh);
 
@@ -86,8 +149,7 @@ async function createGrassScene(engine, canvas, setScene) {
                 clone.position = playerMesh.position.add(new BABYLON.Vector3(i + 1, 0, 0));
                 teams.blue.push(clone);
                 addCloneAI(clone, teams.red, scene, "blue", projectiles);
-
-                clone.hpGui = createHPBar(scene, clone);
+                clone.hpGui = createHPBar(scene, { mesh: clone }, gui);
                 clone.updateHpBar = updateHpBar.bind(clone);
             }
 
@@ -103,9 +165,7 @@ async function createGrassScene(engine, canvas, setScene) {
         };
     }
 
-    // Chargement de tous les assets
     assetsManager.load();
-
     const progressBars = createProgressBars(scene);
 
     // Mise à jour chaque frame
@@ -135,6 +195,11 @@ async function createGrassScene(engine, canvas, setScene) {
             playerMesh.rotation.y = Math.PI;
             moved = true;
         }
+        if (inputStates.space && typeof scene.shoot === "function") {
+            console.log("Shooting...");
+            scene.shoot();
+            inputStates.space = false;
+        }
 
         if (weapon) {
             weapon.fire(inputStates);
@@ -144,11 +209,7 @@ async function createGrassScene(engine, canvas, setScene) {
             const walkAnim = playerAnimations.find(anim =>
                 anim.name.toLowerCase().includes("walk") || anim.name.toLowerCase().includes("run"));
             if (walkAnim) {
-                if (moved) {
-                    walkAnim.start(true);
-                } else {
-                    walkAnim.stop();
-                }
+                moved ? walkAnim.start(true) : walkAnim.stop();
             }
         }
 
@@ -159,9 +220,10 @@ async function createGrassScene(engine, canvas, setScene) {
 
     return scene;
 }
-function updateHpBar()  {
-    const ratio = Math.max(this.hp / this.hpMax, 0);
+
+function updateHpBar() {
+    const ratio = Math.max(this.Hp / this.maxHp, 0);
     this.hpGui.hpBarFill.width = ratio;
-    this.hpGui.hpFloatingText.text = this.hp.toString();
+    this.hpGui.hpFloatingText.text = this.Hp.toString();
     this.hpGui.hpBarFill.background = ratio <= 0.3 ? "red" : "green";
 }
