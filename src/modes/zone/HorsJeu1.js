@@ -244,7 +244,7 @@ function createTank(scene, character ) {
                 this.hpGui.hpFloatingText.isVisible = true;
 
                 // Position de respawn
-                this.position = new BABYLON.Vector3(0, 0.6, 0); // Changer selon le besoin
+                this.position = new BABYLON.Vector3(0, 0.6, 0);
                 this.setEnabled(true);
                 this.isDead = false;
 
