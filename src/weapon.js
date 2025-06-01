@@ -1,7 +1,3 @@
-import { Color3, MeshBuilder, PhysicsAggregate, PhysicsShapeType, StandardMaterial, Vector3 } from "@babylonjs/core";
-
-console.log("weapon.js bien chargé");
-
 class Weapon {
     constructor(gunMesh, heroMesh, scene) {
         this.gunMesh = gunMesh;
@@ -71,16 +67,15 @@ export class Sword extends Weapon {
         this.canFire = false;
         setTimeout(() => this.canFire = true, 500); // cooldown 500ms
 
-        const swordSwing = MeshBuilder.CreateBox("swordSwing", {size: 0.5}, this.scene);
-        swordSwing.material = new StandardMaterial("swordMat", this.scene);
+        const swordSwing = BABYLON.MeshBuilder.CreateBox("swordSwing", {size: 0.5}, this.scene);
+        swordSwing.material = new BABYLON.StandardMaterial("swordMat", this.scene);
         swordSwing.material.diffuseColor = new Color3(1, 0, 0); // rouge
 
-        swordSwing.position = this.gunMesh.getAbsolutePosition().add(new Vector3(0, 0.2, 0));
+        swordSwing.position = this.gunMesh.getAbsolutePosition().add(new BABYLON.Vector3(0, 0.2, 0));
 
+        const direction = this.gunMesh.forward || this.heroMesh.forward || new BABYLON.Vector3(0, 0, 1);
 
-        const direction = this.gunMesh.forward || this.heroMesh.forward || new Vector3(0, 0, 1);
-
-        const swordAgg = new PhysicsAggregate(swordSwing, PhysicsShapeType.BOX, {mass: 1}, this.scene);
+        const swordAgg = new BABYLON.PhysicsAggregate(swordSwing, BABYLON.PhysicsShapeType.BOX, {mass: 1}, this.scene);
         const impulse = direction.scale(30);
         swordAgg.body.applyImpulse(impulse, swordSwing.getAbsolutePosition());
 
