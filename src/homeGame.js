@@ -1,6 +1,3 @@
-import { createPlayersScene } from "./players";
-import { createMapsScene } from "./maps";
-
 function createHomeGameScene(engine, canvas, setScene) {
     let scene = new BABYLON.Scene(engine);
 
@@ -8,6 +5,7 @@ function createHomeGameScene(engine, canvas, setScene) {
     const camera = new BABYLON.ArcRotateCamera("camera", Math.PI / 2, Math.PI / 2.5, 10, BABYLON.Vector3.Zero(), scene);
     camera.attachControl(canvas, true);
     camera.inputs.clear();
+
     // Lumière
     new BABYLON.HemisphericLight("light", new BABYLON.Vector3(0, 1, 0), scene);
     addBackgroundVideo(scene);
@@ -188,4 +186,19 @@ function createHomeGameScene(engine, canvas, setScene) {
 }
 
 
-export { createHomeGameScene };
+function addBackgroundVideo(scene) {
+    /*"https://fr.freepik.com/video-gratuite/animation-arriere-plan-merveilleux-chute-etoiles_3306016#fromView=search&page=1&position=4&uuid=9e1ae306-cbd4-4c63-b20b-78bc44c989f2">Vidéo de freepik */
+    const videoTexture = new BABYLON.VideoTexture(
+        "backgroundVideo",
+        ["./public/assets/background/Stars.mp4"],
+        scene,
+        true,
+        true,
+        BABYLON.VideoTexture.TRILINEAR_SAMPLINGMODE,
+        { autoUpdateTexture: true }
+    );
+
+    const backgroundLayer = new BABYLON.Layer("backgroundLayer", null, scene);
+    backgroundLayer.texture = videoTexture;
+    backgroundLayer.isBackground = true;
+}

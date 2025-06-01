@@ -1,9 +1,18 @@
 async function havokPhysics(scene) {
-    const havok = await HavokPhysics({
-        locateFile: (file) => "./assets/HavokPhysics.wasm"
-    });
-    const hk = new BABYLON.HavokPlugin(true, havok);
-    scene.enablePhysics(new BABYLON.Vector3(0, -9.81, 0), hk);
+    let physicsPlugin;
+
+    try {
+        const havok = await HavokPhysics({
+            locateFile: () => "./public/assets/HavokPhysics.wasm"
+        });
+        physicsPlugin = new BABYLON.HavokPlugin(true, havok);
+    } catch (e) {
+        console.warn("Havok failed to load, falling back to AmmoJS.");
+        const ammo = await Ammo();
+        physicsPlugin = new BABYLON.AmmoJSPlugin(true, ammo);
+    }
+
+    scene.enablePhysics(new BABYLON.Vector3(0, -9.81, 0), physicsPlugin);
 }
 
 function createFreeCamera(scene, canvas) {
@@ -17,8 +26,8 @@ function createFollowCamera(scene, target) {
     // Caméra suiveuse
     let followCamera = new BABYLON.FollowCamera("followCamera", new BABYLON.Vector3(0, 10, -10), scene);
     followCamera.lockedTarget = target;
-    followCamera.radius = 10;
-    followCamera.heightOffset = 40;
+    followCamera.radius = 8;
+    followCamera.heightOffset = 35;
     followCamera.rotationOffset = 180;
     followCamera.inputs.clear();
 
@@ -82,6 +91,19 @@ function setupInput(scene) {
                 inputStates.keyF = pressed;
                 break;
         }
+
+        if (gameOver || !playerAlive) {
+            // Désactive les contrôles si le jeu est terminé ou si le joueur est mort
+            inputStates = {
+                up: false,
+                down: false,
+                left: false,
+                right: false,
+                space: false,
+                keyF: false,
+            };
+        }
+
     });
 }
 
@@ -111,17 +133,18 @@ function createHPBar(scene, character, gui) {
     hpBarFill.height = "100%";
     hpBarFill.background = "green";
     hpBarFill.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_LEFT;
+    hpBarContainer.addControl(hpBarFill);
+
     hpBarContainer.linkWithMesh(character.mesh);
     hpBarContainer.linkOffsetY = -50;
-    hpBarContainer.addControl(hpBarFill);
 
     // Texte flottant des HP au-dessus du dude
     const hpFloatingText = new BABYLON.GUI.TextBlock();
     hpFloatingText.color = "white";
     hpFloatingText.fontSize = 16;
-    hpFloatingText.linkWithMesh(character.mesh);
-    hpFloatingText.linkOffsetY = -70;
     gui.addControl(hpFloatingText);
+    hpFloatingText.linkWithMesh(character.mesh);
+    hpFloatingText.linkOffsetY = -80;
 
     return {
         hpBarContainer,
@@ -166,7 +189,7 @@ function createAmmoBar(scene, character, gui) {
 
 
 
-function showEndGameScreen(scene, winnerTeamName, onReplay, onHome) {
+function showEndGameScreen(scene, winnerTeamName, onHome) {
     const ui = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI-End");
 
     // Fond semi-transparent
@@ -185,20 +208,6 @@ function showEndGameScreen(scene, winnerTeamName, onReplay, onHome) {
     winnerText.top = "-10%";
     background.addControl(winnerText);
 
-    // Bouton Rejouer
-    const replayButton = BABYLON.GUI.Button.CreateSimpleButton("replay", "Rejouer");
-    replayButton.width = "150px";
-    replayButton.height = "50px";
-    replayButton.color = "white";
-    replayButton.cornerRadius = 10;
-    replayButton.background = "#4CAF50";
-    replayButton.top = "10%";
-    replayButton.onPointerClickObservable.add(() => {
-        ui.dispose(); // supprime l'écran
-        onReplay();   // action à définir
-    });
-    background.addControl(replayButton);
-
     // Bouton Accueil
     const homeButton = BABYLON.GUI.Button.CreateSimpleButton("home", "Accueil");
     homeButton.width = "150px";
@@ -209,7 +218,61 @@ function showEndGameScreen(scene, winnerTeamName, onReplay, onHome) {
     homeButton.top = "20%";
     homeButton.onPointerClickObservable.add(() => {
         ui.dispose();
-        onHome(); // action à définir
+        onHome();
     });
     background.addControl(homeButton);
+}
+
+function createGameTimerUI(scene, zoneControl) {
+    const ui = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
+
+    const timerText = new BABYLON.GUI.TextBlock();
+    timerText.text = "02:00";
+    timerText.color = "white";
+    timerText.fontSize = "36px";
+    timerText.top = "-45%";
+    timerText.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
+    timerText.verticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_TOP;
+
+    ui.addControl(timerText);
+
+    let totalSeconds = 120;
+    let ended = false;
+
+    const endGame = (winner) => {
+        if (ended) return;
+        ended = true;
+        clearInterval(intervalId);
+        timerText.text = "00:00";
+
+        showEndGameScreen(scene, winner, () => {
+            window.location.reload();
+        });
+    };
+
+    const intervalId = setInterval(() => {
+        const scores = zoneControl.getScores();
+        if (scores.red >= 100 || scores.blue >= 100) {
+            const winner = scores.red > scores.blue ? "rouge" : scores.blue > scores.red ? "bleue" : "égalité";
+            endGame(winner);
+            return;
+        }
+
+        if (totalSeconds <= 0) {
+            const winner = scores.red > scores.blue ? "rouge" : scores.blue > scores.red ? "bleue" : "égalité";
+            endGame(winner);
+            return;
+        }
+
+        totalSeconds--;
+
+        const minutes = Math.floor(totalSeconds / 60).toString().padStart(2, "0");
+        const seconds = (totalSeconds % 60).toString().padStart(2, "0");
+        timerText.text = `${minutes}:${seconds}`;
+    }, 1000);
+
+    return {
+        stop: () => clearInterval(intervalId),
+        setText: (txt) => timerText.text = txt
+    };
 }

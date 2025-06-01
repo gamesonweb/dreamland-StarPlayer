@@ -1,4 +1,3 @@
-import {createHomeGameScene} from "./homeGame";
 class App {
     constructor() {
         this.canvas = document.createElement("canvas");
@@ -27,7 +26,6 @@ class App {
 
         // Lancer la scène de chargement
         this.setScene(createLoadingScreen(this.engine, this.canvas, () => {
-            // Quand le chargement est terminé
             this.setScene(createHomeGameScene(this.engine, this.canvas, this.setScene.bind(this)));
         }));
     }

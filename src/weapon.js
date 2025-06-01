@@ -13,54 +13,64 @@ class Weapon {
 }
 
 // Arme pistolet héritant de Weapon
-export class FireGun extends Weapon {
+class FireGun extends Weapon {
     fire(ignoreCooldown = false) {
-        console.log("FireGun.fire() called");
         if (!this.gunMesh || (!this.canFire && !ignoreCooldown)) return;
-    
+
         if (!ignoreCooldown) {
             this.canFire = false;
             setTimeout(() => this.canFire = true, 300);
         }
-    
+
         this.gunMesh.computeWorldMatrix(true);
         const gunPos = this.gunMesh.getAbsolutePosition().clone();
-    
-        const bullet = MeshBuilder.CreateSphere("bullet", { diameter: 0.3 }, this.scene);
-        bullet.material = new StandardMaterial("bulletMat", this.scene);
-        bullet.material.diffuseColor = new Color3(1, 1, 0);
-    
-        bullet.position = gunPos.add(new Vector3(0, 0.2, 0));
-    
-        const direction = this.gunMesh.getDirection(new Vector3(0, 0, 1));
-        console.log("Bullet direction:", direction);
-    
-        // Création physique (identique au reste de ta scène)
-        const bulletAgg = new PhysicsAggregate(bullet, PhysicsShapeType.SPHERE, { mass: 0.2 }, this.scene);
-        
-        // Impulsion pour propulser la balle
-        const impulse = direction.scale(50);
-        bulletAgg.body.applyImpulse(impulse, bullet.getAbsolutePosition());
-    
-        // Gestion collision avec HavokPhysics
-        if (bulletAgg.body.onCollision) {
-            bulletAgg.body.onCollision = (otherBody) => {
-                console.log("Collision détectée avec :", otherBody.object ? otherBody.object.name : "un objet"); // <-- Log collision
-                if (!bullet.isDisposed()) {
+
+        const bullet = BABYLON.MeshBuilder.CreateSphere("bullet", { diameter: 0.3 }, this.scene);
+        bullet.material = new BABYLON.StandardMaterial("bulletMat", this.scene);
+        bullet.material.diffuseColor = new BABYLON.Color3(1, 1, 0);
+        bullet.position = gunPos.add(new BABYLON.Vector3(0, 0.2, 0));
+        bullet.lifespan = 2000;
+
+        const direction = this.gunMesh.getDirection(new BABYLON.Vector3(0, 0, 1)).normalize();
+        const speed = 3;
+
+        bullet.physicsImpostor = new BABYLON.PhysicsImpostor(
+            bullet,
+            BABYLON.PhysicsImpostor.SphereImpostor,
+            { mass: 0.1, restitution: 0 },
+            this.scene
+        );
+
+        bullet.physicsImpostor.setLinearVelocity(direction.scale(speed));
+
+        // Vérifie les collisions avec tous les ennemis
+        this.scene.registerBeforeRender(() => {
+            this.scene.meshes.forEach(mesh => {
+                if (
+                    mesh !== bullet &&
+                    mesh.name !== this.heroMesh.name &&
+                    mesh.Hp !== undefined &&
+                    mesh.position &&
+                    BABYLON.Vector3.Distance(mesh.position, bullet.position) < 1.2
+                ) {
+                    // Touche le mesh : inflige des dégâts
+                    mesh.Hp -= 10;
+                    if (mesh.updateHpBar) mesh.updateHpBar();
                     bullet.dispose();
                 }
-            };
-        } else {
-            // Si pas d'événement collision, suppression automatique après 3s
-            setTimeout(() => {
-                if (!bullet.isDisposed()) bullet.dispose();
-            }, 3000);
-        }
+            });
+        });
+
+        // Détruire la balle après 2 secondes
+        setTimeout(() => {
+            if (bullet && bullet.dispose) bullet.dispose();
+        }, bullet.lifespan);
+
+        return bullet;
     }
 }
 
-
-export class Sword extends Weapon {
+class Sword extends Weapon {
     fire(inputStates) {
         if (!inputStates.keyF || !this.gunMesh || !this.canFire) return;
 
@@ -75,11 +85,13 @@ export class Sword extends Weapon {
 
         const direction = this.gunMesh.forward || this.heroMesh.forward || new BABYLON.Vector3(0, 0, 1);
 
-        const swordAgg = new BABYLON.PhysicsAggregate(swordSwing, BABYLON.PhysicsShapeType.BOX, {mass: 1}, this.scene);
+        const swordAgg = new BABYLON.PhysicsImpostor(swordSwing, BABYLON.PhysicsImpostor.BoxImpostor, { mass: 1 }, this.scene);
         const impulse = direction.scale(30);
         swordAgg.body.applyImpulse(impulse, swordSwing.getAbsolutePosition());
 
         setTimeout(() => swordSwing.dispose(), 1000);
 }
-}
 
+
+
+}

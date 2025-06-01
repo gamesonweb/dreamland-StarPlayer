@@ -13,7 +13,7 @@ function getTeamColorBlend(redScore, blueScore) {
 }
 
 function setupZoneControl(scene, teams) {
-    const zone = BABYLON.MeshBuilder.CreateCylinder("zone", { diameter: 13, height: 0.1 }, scene);
+    const zone = BABYLON.MeshBuilder.CreateCylinder("zone", { diameter: 15, height: 0.1 }, scene);
     zone.position.y = 0;
 
     const mat = new BABYLON.StandardMaterial("zoneMat", scene);
@@ -34,9 +34,11 @@ function setupZoneControl(scene, teams) {
             teams.blue.forEach(p => {
                 if (p.intersectsMesh(zone, false)) blueCount++;
             });
-
-            if (redCount > blueCount) redScore += 0.07;
-            else if (blueCount > redCount) blueScore += 0.07;
+            const totalCount = redCount + blueCount;
+            if (totalCount > 0) {
+                redScore += 0.07 * (redCount / totalCount);
+                blueScore += 0.07 * (blueCount / totalCount);
+            }
 
             mat.diffuseColor = getTeamColorBlend(redScore, blueScore);
         },
