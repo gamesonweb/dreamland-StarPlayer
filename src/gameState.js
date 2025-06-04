@@ -243,6 +243,9 @@ function createGameTimerUI(scene, zoneControl) {
         if (ended) return;
         ended = true;
         clearInterval(intervalId);
+        scene.animationGroups?.forEach(group => group.stop());
+        scene.onBeforeRenderObservable.clear();
+        scene.disablePhysicsEngine();
         timerText.text = "00:00";
 
         showEndGameScreen(scene, winner, () => {
@@ -276,3 +279,4 @@ function createGameTimerUI(scene, zoneControl) {
         setText: (txt) => timerText.text = txt
     };
 }
+

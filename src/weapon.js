@@ -31,67 +31,57 @@ class FireGun extends Weapon {
         bullet.position = gunPos.add(new BABYLON.Vector3(0, 0.2, 0));
         bullet.lifespan = 2000;
 
-        const direction = this.gunMesh.getDirection(new BABYLON.Vector3(0, 0, 1)).normalize();
         const speed = 3;
+        bullet.physicsImpostor = new BABYLON.PhysicsImpostor(bullet, BABYLON.PhysicsImpostor.SphereImpostor, {
+            mass: 0.1,
+            restitution: 0,
+            friction: 0
+        }, this.scene);
 
-        bullet.physicsImpostor = new BABYLON.PhysicsImpostor(
-            bullet,
-            BABYLON.PhysicsImpostor.SphereImpostor,
-            { mass: 0.1, restitution: 0 },
-            this.scene
-        );
+        const forward = this.gunMesh.getDirection(BABYLON.Vector3.Forward()).scale(speed);
+        bullet.physicsImpostor.setLinearVelocity(forward);
+        bullet.createdAt = Date.now();
 
-        bullet.physicsImpostor.setLinearVelocity(direction.scale(speed));
-
-        // Vérifie les collisions avec tous les ennemis
-        this.scene.registerBeforeRender(() => {
+        // Vérifie collisions à chaque frame (une seule fois pour cette balle)
+        const checkCollision = () => {
             this.scene.meshes.forEach(mesh => {
                 if (
                     mesh !== bullet &&
                     mesh.name !== this.heroMesh.name &&
                     mesh.Hp !== undefined &&
                     mesh.position &&
+                    mesh.team !== this.heroMesh.team &&
                     BABYLON.Vector3.Distance(mesh.position, bullet.position) < 1.2
                 ) {
-                    // Touche le mesh : inflige des dégâts
-                    mesh.Hp -= 10;
+                    mesh.Hp -= 500;
                     if (mesh.updateHpBar) mesh.updateHpBar();
+
+                    if (mesh.Hp <= 0) {
+                        handleDeath(mesh, this.scene);
+                    }
+
                     bullet.dispose();
                 }
             });
+        };
+
+        const observer = this.scene.onBeforeRenderObservable.add(() => {
+            if (!bullet || bullet.isDisposed()) {
+                this.scene.onBeforeRenderObservable.remove(observer);
+                return;
+            }
+            checkCollision();
         });
 
-        // Détruire la balle après 2 secondes
+        // Supprimer la balle au bout de 2 secondes
         setTimeout(() => {
-            if (bullet && bullet.dispose) bullet.dispose();
+            if (bullet && !bullet.isDisposed()) {
+                bullet.dispose();
+            }
+            this.scene.onBeforeRenderObservable.remove(observer);
         }, bullet.lifespan);
 
         return bullet;
     }
-}
-
-class Sword extends Weapon {
-    fire(inputStates) {
-        if (!inputStates.keyF || !this.gunMesh || !this.canFire) return;
-
-        this.canFire = false;
-        setTimeout(() => this.canFire = true, 500); // cooldown 500ms
-
-        const swordSwing = BABYLON.MeshBuilder.CreateBox("swordSwing", {size: 0.5}, this.scene);
-        swordSwing.material = new BABYLON.StandardMaterial("swordMat", this.scene);
-        swordSwing.material.diffuseColor = new Color3(1, 0, 0); // rouge
-
-        swordSwing.position = this.gunMesh.getAbsolutePosition().add(new BABYLON.Vector3(0, 0.2, 0));
-
-        const direction = this.gunMesh.forward || this.heroMesh.forward || new BABYLON.Vector3(0, 0, 1);
-
-        const swordAgg = new BABYLON.PhysicsImpostor(swordSwing, BABYLON.PhysicsImpostor.BoxImpostor, { mass: 1 }, this.scene);
-        const impulse = direction.scale(30);
-        swordAgg.body.applyImpulse(impulse, swordSwing.getAbsolutePosition());
-
-        setTimeout(() => swordSwing.dispose(), 1000);
-}
-
-
-
+    
 }

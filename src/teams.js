@@ -1,15 +1,16 @@
-function addCloneAI(clone, enemies, scene, team, projectiles, teams) { // ajout de teams en param
-    const speed = 0.03;
+function addCloneAI(clone, enemies, scene, team, projectiles, teams) {
+    const speed = 0.05;
     const shootCooldown = 1000;
     let lastShotTime = 0;
 
-    scene.onBeforeRenderObservable.add(() => {
-        if (!clone) return;
+    const aiCallback = () => {
+        if (!clone || !clone.isVisible) return;
 
         let closestEnemy = null;
         let closestDistance = Infinity;
 
         for (const enemy of enemies) {
+            if (!enemy || !enemy.isVisible) continue;
             const distance = BABYLON.Vector3.Distance(clone.position, enemy.position);
             if (distance < closestDistance) {
                 closestDistance = distance;
@@ -21,8 +22,10 @@ function addCloneAI(clone, enemies, scene, team, projectiles, teams) { // ajout 
             const direction = closestEnemy.position.subtract(clone.position).normalize();
             clone.moveWithCollisions(direction.scale(speed));
             const physicsImpostor = clone.physicsImpostor;
-            const directionForce = direction.scale(speed * 10);
-            physicsImpostor.applyImpulse(directionForce, clone.getAbsolutePosition());
+            if (physicsImpostor) {
+                const directionForce = direction.scale(speed * 10);
+                physicsImpostor.applyImpulse(directionForce, clone.getAbsolutePosition());
+            }
 
             if (clone.animations) {
                 playAnimationByName(clone, "Run", true);
@@ -31,7 +34,7 @@ function addCloneAI(clone, enemies, scene, team, projectiles, teams) { // ajout 
             const now = Date.now();
             if (closestDistance < 6 && now - lastShotTime > shootCooldown) {
                 playAnimationByName(clone, "Shoot", false);
-                fireProjectile(clone, direction, scene, team, projectiles, teams); // passe teams ici
+                fireProjectile(clone, direction, scene, team, projectiles, teams);
                 lastShotTime = now;
             }
         } else {
@@ -39,7 +42,11 @@ function addCloneAI(clone, enemies, scene, team, projectiles, teams) { // ajout 
                 playAnimationByName(clone, "Pose", true);
             }
         }
-    });
+    };
+
+    scene.onBeforeRenderObservable.add(aiCallback);
+
+    return aiCallback;
 }
 function fireProjectile(origin, direction, scene, team, projectiles, teams) {
     const projectile = BABYLON.MeshBuilder.CreateSphere("projectile", { diameter: 0.3 }, scene);
@@ -53,15 +60,19 @@ function fireProjectile(origin, direction, scene, team, projectiles, teams) {
     const velocity = direction.scale(1);
     projectiles.push(projectile);
 
+    // Lier le projectile au clone pour pouvoir nettoyer à la mort
+    if (!origin.projectiles) origin.projectiles = [];
+    origin.projectiles.push(projectile);
+
     // Mouvement
-    scene.onBeforeRenderObservable.add(() => {
+    const moveCallback = () => {
         projectile.position.addInPlace(velocity);
-    });
+    };
+    scene.onBeforeRenderObservable.add(moveCallback);
 
     // Collision logique
     const enemies = team === "red" ? teams.blue : teams.red;
 
-    projectile.actionManager = new BABYLON.ActionManager(scene);
     const checkHitInterval = setInterval(() => {
         for (const enemy of enemies) {
             if (!enemy || !enemy.isVisible) continue;
@@ -71,6 +82,7 @@ function fireProjectile(origin, direction, scene, team, projectiles, teams) {
                 dealDamage(enemy, 1000, scene, teams);
                 projectile.dispose();
                 clearInterval(checkHitInterval);
+                scene.onBeforeRenderObservable.remove(moveCallback);
                 return;
             }
         }
@@ -78,10 +90,10 @@ function fireProjectile(origin, direction, scene, team, projectiles, teams) {
         if (projectile.position.length() > 1000) {
             projectile.dispose();
             clearInterval(checkHitInterval);
+            scene.onBeforeRenderObservable.remove(moveCallback);
         }
     }, 50);
 }
-
 
 function dealDamage(target, amount, scene, teams) {
     if (target.Hp === undefined) return;
@@ -93,8 +105,8 @@ function dealDamage(target, amount, scene, teams) {
         handleDeath(target, scene, teams);
     }
 }
-
 function handleDeath(mesh, scene, teams) {
+    // Désactivation du mesh et UI
     mesh.setEnabled(false);
     mesh.isVisible = false;
 
@@ -107,6 +119,26 @@ function handleDeath(mesh, scene, teams) {
         mesh.ammoBar.ammoBarContainer.isVisible = false;
     }
 
+    // Supprimer physics impostor
+    if (mesh.physicsImpostor) {
+        mesh.physicsImpostor.dispose();
+        mesh.physicsImpostor = null;
+    }
+
+    // Supprimer callback IA
+    if (mesh.aiCallback) {
+        scene.onBeforeRenderObservable.remove(mesh.aiCallback);
+        mesh.aiCallback = null;
+    }
+
+    // Supprimer projectiles liés
+    if (mesh.projectiles) {
+        for (const p of mesh.projectiles) {
+            p.dispose();
+        }
+        mesh.projectiles = [];
+    }
+
     if (mesh.isPlayer) {
         playerAlive = false;
         enterSpectatorMode(scene, mesh.team, teams);
@@ -114,6 +146,7 @@ function handleDeath(mesh, scene, teams) {
 
     showDeathMessage(mesh, scene, 10);
 
+    // Réapparition
     setTimeout(() => {
         if (gameOver) return;
 
@@ -134,14 +167,23 @@ function handleDeath(mesh, scene, teams) {
 
         if (mesh.isPlayer) {
             playerAlive = true;
-
             if (mesh.camera) {
                 scene.activeCamera = mesh.camera;
                 mesh.camera.attachControl(scene.getEngine().getRenderingCanvas(), true);
             }
         }
+
+        // Remettre physics impostor si nécessaire (à recréer)
+        if (!mesh.physicsImpostor) {
+            mesh.physicsImpostor = new BABYLON.PhysicsImpostor(mesh, BABYLON.PhysicsImpostor.BoxImpostor, { mass: 0, restitution: 0.1 }, scene);
+        }
+
+        // Remettre IA
+        //mesh.aiCallback = addCloneAI(mesh, teams[mesh.team === "red" ? "blue" : "red"], scene, mesh.team, projectilesGlobal, teams);
+
     }, 10000);
 }
+
 
 
     function showDeathMessage(mesh, scene, seconds) {
