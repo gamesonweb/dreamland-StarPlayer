@@ -140,9 +140,9 @@ async function createGrassScene(engine, canvas, setScene) {
                     mesh.checkCollisions = true;
                     mesh.position = member.position.clone();
                     if (teamName === "red") {
-                        mesh.rotationQuaternion = null;
-                        mesh.rotation.y = Math.PI; // 180°
+                        mesh.rotate(BABYLON.Axis.Y, -Math.PI);
                     }
+
                     mesh.spawnPosition = mesh.position.clone();
 
                     mesh.physicsImpostor = new BABYLON.PhysicsImpostor(

@@ -178,13 +178,11 @@ function handleDeath(mesh, scene, teams) {
             mesh.physicsImpostor = new BABYLON.PhysicsImpostor(mesh, BABYLON.PhysicsImpostor.BoxImpostor, { mass: 0, restitution: 0.1 }, scene);
         }
 
-        // Remettre IA
+        
         //mesh.aiCallback = addCloneAI(mesh, teams[mesh.team === "red" ? "blue" : "red"], scene, mesh.team, projectilesGlobal, teams);
 
     }, 10000);
 }
-
-
 
     function showDeathMessage(mesh, scene, seconds) {
     const ui = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI-Death");
